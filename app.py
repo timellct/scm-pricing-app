@@ -101,6 +101,38 @@ st.markdown(
     """,
     unsafe_allow_html=True,
 )
+/* Make SELECT boxes as visible as number inputs */
+div[data-baseweb="select"] > div,
+.stSelectbox > div {
+  border: 2px solid #111827 !important;       /* เข้มขึ้น */
+  background: #FFFFFF !important;             /* พื้นขาวเหมือนช่องตัวเลข */
+  border-radius: 12px !important;
+}
+
+/* Hover / Focus state ให้เด่น */
+div[data-baseweb="select"] > div:hover,
+div[data-baseweb="select"] > div:focus-within,
+.stSelectbox > div:hover,
+.stSelectbox > div:focus-within {
+  box-shadow: 0 0 0 3px rgba(124,131,253,0.25) !important; /* วงแหวนสีม่วงอ่อน */
+  border-color: #111827 !important;
+}
+
+/* ลูกศร (caret) ให้เข้มและชัด */
+div[data-baseweb="select"] svg,
+.stSelectbox svg {
+  color: #111827 !important;
+  opacity: 1 !important;
+}
+div[data-baseweb="select"] svg path,
+.stSelectbox svg path {
+  fill: #111827 !important;
+}
+
+/* ตัวหนังสือในรายการ dropdown ให้เข้ม */
+div[role="listbox"] * { color: #111827 !important; }
+div[role="listbox"]   { background: #FFFFFF !important; }
+
 
 # =========================
 # HEADER
