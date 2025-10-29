@@ -289,4 +289,3 @@ st.markdown(
     "<div class='footer-note'>This tool follows the official pricing logic and Contact-Sales rules. For non-standard scopes, consult the Solutions Team.</div>",
     unsafe_allow_html=True,
 )
-
