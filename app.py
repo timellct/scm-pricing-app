@@ -272,7 +272,7 @@ def thb(n):
 # =========================
 # INPUTS (no empty card wrappers)
 # =========================
-st.markdown("<div class='section-title'>🧁 Project Inputs</div>", unsafe_allow_html=True)
+st.markdown("<div class='section-title'>🍎 Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs", border=False):
     c1, c2 = st.columns(2)
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
@@ -341,7 +341,7 @@ if submitted:
 
         xlsx_bytes = build_excel(quote_df)
         st.download_button(
-            "📥 Download Quote (Excel — 1 sheet)",
+            "📥 Download Quote",
             data=xlsx_bytes,
             file_name=f"SCM_Quote_{date.today().isoformat()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
