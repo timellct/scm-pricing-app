@@ -14,7 +14,6 @@ PRIMARY    = "#7C83FD"   # lavender
 ACCENT     = "#111827"   # near-black readable text
 BG1        = "#FFF7FB"   # blush
 BG2        = "#F3F7FF"   # baby-blue
-CARD_BG    = "#FFFFFF"
 SOFT_LINE  = "#E8ECF3"
 LOGO_PATH  = "logo.png"
 FAVICON    = "🎀"
@@ -23,7 +22,7 @@ st.set_page_config(
     page_title=f"{BRAND_NAME} — {TAGLINE}",
     page_icon=FAVICON,
     layout="centered",
-    initial_sidebar_state="collapsed",  # hide sidebar
+    initial_sidebar_state="collapsed",
 )
 
 # =========================
@@ -32,23 +31,19 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-      /* Hide sidebar completely */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
 
-      /* Background gradient */
       .stApp {{
         background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%);
       }}
 
-      /* Friendly font */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
-      /* Header card (glass) */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:18px 20px;
         border-radius:18px; background: rgba(255,255,255,0.85);
@@ -58,23 +53,15 @@ st.markdown(
       .brand-title   {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
       .brand-subtitle{{ font-size:13px;  color:#6B7280; margin:3px 0 0 0; }}
 
-      /* Card container */
-      .card {{
-        background:{CARD_BG}; border:1px solid {SOFT_LINE}; border-radius:18px;
-        box-shadow: 0 10px 30px rgba(31,41,55,0.06); padding:18px;
-      }}
-
-      /* Section title */
       .section-title {{
         display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Force all headings/labels to dark text */
+      /* Inputs: white bg + dark text */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
-      /* ===== Inputs: white background + dark text + soft border ===== */
       div[data-baseweb="input"] > div,
       div[data-baseweb="select"] > div {{
         background:#FFFFFF !important;
@@ -88,21 +75,18 @@ st.markdown(
         color:{ACCENT} !important;
         background:#FFFFFF !important;
       }}
-      .stNumberInput > div > div {{  /* number input box */
+      .stNumberInput > div > div {{
         background:#FFFFFF !important;
         border:1px solid #E5E7EB !important;
         border-radius:12px !important;
       }}
-      .stNumberInput input {{
-        color:{ACCENT} !important; background:#FFFFFF !important;
-      }}
+      .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
       .stSelectbox > div {{
         background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important;
       }}
       div[role="listbox"] * {{ color:{ACCENT} !important; }}
       div[role="listbox"] {{ background:#FFFFFF !important; }}
 
-      /* Buttons */
       .stButton > button {{
         background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
         border-radius:14px !important; padding:10px 16px !important;
@@ -110,7 +94,6 @@ st.markdown(
       }}
       .stButton > button:hover {{ filter:brightness(1.03); }}
 
-      /* Metrics & table text */
       [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
@@ -147,20 +130,11 @@ with c_head:
 # =========================
 # PRICING CONSTANTS / LOGIC
 # =========================
-# — Camera / AI tiers
 CAMERA_TIERS = [(10, 1800), (30, 1600), (50, 1500), (100, 1300)]
 T1_TIERS     = [(50, 11000), (100, 8000)]
 T2_TIERS     = [(50, 5600), (100, 4500)]
 
-# — Storage base price (ไม่รวม VAT/Markup)
-STORAGE_BASE = {
-    1:  1670,   # WD Purple
-    2:  2030,   # WD Purple
-    4:  2930,   # WD Purple
-    6:  4990,   # Seagate SkyHawk
-    8:  6890,   # Seagate SkyHawk AI
-    10: 10990,  # WD Purple Pro
-}
+STORAGE_BASE = {1:1670, 2:2030, 4:2930, 6:4990, 8:6890, 10:10990}
 
 BASE_LICENSE     = 45000
 AI_BASE_LICENSE  = 15000
@@ -174,40 +148,27 @@ def tier_price(qty: int, tiers):
     for bound, price in tiers:
         if qty <= bound:
             return price
-    return None  # exceeds max -> trigger contact sales
+    return None  # exceeds max -> contact sales
 
 def choose_storage_combo(required_tb: int):
-    """
-    เลือกชุด HDD ให้ความจุรวม >= required_tb
-    กติกา: ถ้าต้องการความจุที่ไม่พอดีกับ SKU ให้ปัดขึ้นไปใช้ SKU ที่เล็กสุดที่ครอบคลุม
-    เช่น ต้องการ 5 TB -> ใช้ 6 TB, ต้องการ 15 TB -> ใช้ 10 TB + 6 TB (รวม 16)
-    คืนค่า: dict {size_tb: qty}
-    """
-    if required_tb <= 0:
-        return {}
-
+    # Greedy: pick smallest SKU that covers remaining; ensures sum >= required
+    if required_tb <= 0: return {}
     sizes_sorted = sorted(STORAGE_BASE.keys())             # [1,2,4,6,8,10]
-    sizes_desc   = sorted(STORAGE_BASE.keys(), reverse=True)
-
-    combo = {}
-    remaining = required_tb
-
+    combo, remaining = {}, required_tb
     while remaining > 0:
-        if remaining > max(sizes_sorted):
-            pick = max(sizes_sorted)  # 10 TB
+        if remaining > sizes_sorted[-1]:
+            pick = sizes_sorted[-1]  # 10 TB
         else:
-            # smallest size >= remaining
             pick = next(s for s in sizes_sorted if s >= remaining)
         combo[pick] = combo.get(pick, 0) + 1
         remaining -= pick
-
     return combo
 
 def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
     if t1 + t2 > total:
-        return {"status": "ERROR", "message": "AI cameras exceed total cameras."}
+        return {"status":"ERROR","message":"AI cameras exceed total cameras."}
     if total > 100 or t1 > 100 or t2 > 100:
-        return {"status": "CONTACT_SALES", "reason": "Total cameras or an AI tier exceeds 100."}
+        return {"status":"CONTACT_SALES","reason":"Total cameras or an AI tier exceeds 100."}
 
     cam_unit = tier_price(total, CAMERA_TIERS)
     t1_unit  = tier_price(t1, T1_TIERS)
@@ -224,29 +185,23 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
     hw_unit_price = (HW_BASE * (1 + mu)) if hw_units > 0 else 0
     hw_sub        = hw_units * hw_unit_price
 
-    # ----- Storage (TB manual) -----
     storage_lines = []
     storage_sub   = 0
     if include_storage:
         if storage_tb_total is None or storage_tb_total <= 0:
-            return {"status": "ERROR", "message": "Please enter required Storage TB (>0)."}
+            return {"status":"ERROR","message":"Please enter required Storage TB (>0)."}
         combo = choose_storage_combo(int(storage_tb_total))
-        # Create a line per drive size
         for size_tb, qty in sorted(combo.items(), reverse=True):
-            base = STORAGE_BASE[size_tb]
-            unit_after_markup = base * (1 + mu)
+            unit_after_markup = STORAGE_BASE[size_tb] * (1 + mu)
             sub = qty * unit_after_markup
             storage_sub += sub
-            storage_lines.append(
-                (f"HDD {size_tb} TB", qty, unit_after_markup, sub)
-            )
+            storage_lines.append((f"HDD {size_tb} TB", qty, unit_after_markup, sub))
 
     grand    = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
     discount = -0.20 * grand if cust_type == "SI" else 0
     net      = grand + discount
     ma       = MA_RATE * net
 
-    # Build line items
     lines = [
         ("Base License", 1, BASE_LICENSE, base_sub),
         ("Cameras", total, cam_unit or 0, cams_sub),
@@ -255,7 +210,6 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
         ("AI Licenses — Tier 2", t2, t2_unit or 0, ai_t2_sub),
         ("AI Processing Equipment", hw_units, hw_unit_price, hw_sub),
     ]
-    # append storage detail lines (already marked up)
     lines.extend(storage_lines)
 
     return {"status":"OK","lines":lines,"grand_total":grand,"discount":discount,"net_total":net,"ma_yearly":ma}
@@ -265,24 +219,17 @@ def thb(n):
     except Exception: return "-"
 
 # =========================
-# INPUT CARD
+# INPUTS (no empty card wrappers)
 # =========================
 st.markdown("<div class='section-title'>🧁 Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs", border=False):
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
     cust_type = c2.selectbox("Customer Type", ["SI", "Non-SI"])
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1)
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
-
-    # New: manual TB input when storage is included
-    storage_tb_total = None
-    if include_storage:
-        storage_tb_total = c2.number_input("Storage Required (TB)", min_value=1, value=8, step=1)
-
-    st.markdown("</div>", unsafe_allow_html=True)
+    storage_tb_total = c2.number_input("Storage Required (TB)", min_value=1, value=8, step=1) if include_storage else None
     submitted = st.form_submit_button("Calculate ✨", use_container_width=True)
 
 # =========================
@@ -296,8 +243,8 @@ if submitted:
 
     elif r["status"] == "CONTACT_SALES":
         st.markdown(
-            f"<div class='card'><div class='section-title'>📞 Contact Sales</div>"
-            f"<div>Totals are hidden for projects with more than 100 cameras or any AI tier above 100.</div></div>",
+            "<div class='section-title'>📞 Contact Sales</div>"
+            "<div>Totals are hidden for projects with more than 100 cameras or any AI tier above 100.</div>",
             unsafe_allow_html=True,
         )
         st.subheader("Grand Total")
@@ -306,21 +253,15 @@ if submitted:
     else:
         st.balloons()
 
-        # KPI summary
-        st.markdown("<div class='section-title'>🍬 Summary</div>", unsafe_allow_html=True)
+        # Summary metrics (no empty card wrappers)
+        st.markdown("<div class='section-title'>🧁 Summary</div>", unsafe_allow_html=True)
         k1, k2, k3, k4 = st.columns(4)
-        for col, label, value in [
-            (k1, "Grand Total (THB)", thb(r["grand_total"])),
-            (k2, "Partner Discount", thb(r["discount"])),
-            (k3, "Net Total (THB)", thb(r["net_total"])),
-            (k4, "MA 20%/yr (THB)", thb(r["ma_yearly"])),
-        ]:
-            with col:
-                st.markdown("<div class='card'>", unsafe_allow_html=True)
-                st.metric(label, value)
-                st.markdown("</div>", unsafe_allow_html=True)
+        with k1: st.metric("Grand Total (THB)", thb(r["grand_total"]))
+        with k2: st.metric("Partner Discount",   thb(r["discount"]))
+        with k3: st.metric("Net Total (THB)",    thb(r["net_total"]))
+        with k4: st.metric("MA 20%/yr (THB)",    thb(r["ma_yearly"]))
 
-        # Quote table: items + totals rows
+        # Quote table
         st.markdown("<div class='section-title'>🧾 Quote Table</div>", unsafe_allow_html=True)
         line_rows = [
             {"Item": n, "Qty": q, "Unit Price (THB)": (thb(u) if u else "-"), "Subtotal (THB)": (thb(s) if s else "-")}
@@ -349,7 +290,7 @@ if submitted:
 
         xlsx_bytes = build_excel(quote_df)
         st.download_button(
-            "📥 Download Quote",
+            "📥 Download Quote (Excel — 1 sheet)",
             data=xlsx_bytes,
             file_name=f"SCM_Quote_{date.today().isoformat()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
