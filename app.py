@@ -31,105 +31,83 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-      /* Hide sidebar controls */
-      section[data-testid="stSidebar"] {{ display:none !important; }}
-      div[data-testid="collapsedControl"] {{ display:none !important; }}
+      /* ===== Minimal inputs: single clean border for all fields ===== */
 
-      /* Background gradient */
-      .stApp {{
-        background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%);
-      }}
+/* COMMON: label/text */
+label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
+.stMarkdown h4, .stMarkdown h5, .stMarkdown h6 { color:#111827 !important; }
 
-      /* Font */
-      @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
-      html, body, [class^="css"], [class*="css"] {{
-        font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        color: {ACCENT} !important;
-      }}
+/* 1) NUMBER & TEXT INPUT (outer wrapper) */
+div[data-baseweb="input"] > div {
+  background:#FFFFFF !important;
+  color:#111827 !important;
+  border:1px solid #111827 !important;   /* เส้นเดียวบาง */
+  border-radius:12px !important;
+  box-shadow:none !important;
+  outline:none !important;
+  overflow:hidden;                        /* ตัดขอบซ้อนของชั้นใน */
+}
 
-      /* Header card */
-      .app-header {{
-        display:flex; align-items:center; gap:16px; padding:18px 20px;
-        border-radius:18px; background: rgba(255,255,255,0.85);
-        border:1px solid {SOFT_LINE}; backdrop-filter: blur(6px);
-        box-shadow: 0 8px 24px rgba(124,131,253,0.12); margin-bottom: 6px;
-      }}
-      .brand-title   {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
-      .brand-subtitle{{ font-size:13px;  color:#6B7280; margin:3px 0 0 0; }}
+/* ตัดเส้น/เงาของชั้นในทั้งหมด */
+div[data-baseweb="input"] > div > div {
+  border:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
 
-      /* Section title */
-      .section-title {{
-        display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
-        color:{ACCENT}; margin:6px 0 12px 0;
-      }}
+/* ตัวอักษรในช่อง */
+div[data-baseweb="input"] input {
+  color:#111827 !important;
+  background:#FFFFFF !important;
+}
 
-      /* Text colors force */
-      label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
-      .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
+/* ปุ่ม +/- (stepper) ให้ดูกลืน ๆ พร้อมเส้นคั่นเดียว */
+div[data-baseweb="input"] [role="button"] {
+  border-left:1px solid #111827 !important;   /* เส้นคั่นเดียวทางขวา */
+  box-shadow:none !important;
+}
 
-      /* Inputs: white bg + dark text (number inputs) */
-      div[data-baseweb="input"] > div {{
-        background:#FFFFFF !important;
-        color:{ACCENT} !important;
-        border:1px solid #111827 !important;
-        border-radius:12px !important;
-        box-shadow:none !important;
-      }}
-      div[data-baseweb="input"] input {{
-        color:{ACCENT} !important;
-        background:#FFFFFF !important;
-      }}
-      .stNumberInput > div > div {{
-        background:#FFFFFF !important;
-        border:1px solid #111827 !important;
-        border-radius:12px !important;
-      }}
-      .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
+/* 2) SELECT (Customer Type / Include Storage) */
+div[data-baseweb="select"] > div {
+  background:#FFFFFF !important;
+  color:#111827 !important;
+  border:1px solid #111827 !important;   /* เส้นเดียวบาง */
+  border-radius:12px !important;
+  box-shadow:none !important;
+  outline:none !important;
+  overflow:hidden;                        /* ตัดขอบซ้อน */
+}
 
-      /* === SELECT (Customer Type / Include Storage) : single border like others === */
-      div[data-baseweb="select"] > div,
-      div[data-baseweb="select"] > div > div,
-      .stSelectbox > div {{
-        background:#FFFFFF !important;
-        color:#111827 !important;
-        border:1px solid #111827 !important;   /* เส้นเดียว */
-        border-radius:12px !important;
-        box-shadow:none !important;
-        outline:none !important;
-      }}
-      /* ปิดแสงตอน hover/focus เพื่อไม่ให้มีขอบซ้อน */
-      div[data-baseweb="select"] > div:hover,
-      div[data-baseweb="select"] > div:focus,
-      div[data-baseweb="select"] > div:focus-within,
-      .stSelectbox > div:hover,
-      .stSelectbox > div:focus,
-      .stSelectbox > div:focus-within {{
-        box-shadow:none !important;
-        border-color:#111827 !important;
-      }}
-      /* caret ให้เข้ม */
-      div[data-baseweb="select"] svg,
-      .stSelectbox svg {{
-        color:#111827 !important; opacity:1 !important;
-      }}
-      div[data-baseweb="select"] svg path,
-      .stSelectbox svg path {{ fill:#111827 !important; }}
-      /* dropdown list */
-      div[role="listbox"]   {{ background:#FFFFFF !important; }}
-      div[role="listbox"] * {{ color:#111827 !important; }}
+/* ตัดเส้นของชั้นใน select ทั้งหมด */
+div[data-baseweb="select"] > div > div {
+  border:0 !important;
+  box-shadow:none !important;
+  background:transparent !important;
+}
 
-      /* Buttons */
-      .stButton > button {{
-        background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
-        border-radius:14px !important; padding:10px 16px !important;
-        box-shadow:0 8px 24px rgba(124,131,253,0.30) !important;
-      }}
-      .stButton > button:hover {{ filter:brightness(1.03); }}
+/* caret (ลูกศร) เข้มชัด */
+div[data-baseweb="select"] svg { color:#111827 !important; opacity:1 !important; }
+div[data-baseweb="select"] svg path { fill:#111827 !important; }
 
-      /* Tables & Metrics */
-      [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
-      [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
-      [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
+/* เมนูที่ดรอปลงมา */
+div[role="listbox"]   { background:#FFFFFF !important; border:1px solid #111827 !important; }
+div[role="listbox"] * { color:#111827 !important; }
+
+/* 3) ปุ่มกดหลัก */
+.stButton > button {
+  background:#111827 !important;
+  color:#FFFFFF !important;
+  border:0 !important;
+  border-radius:12px !important;
+  padding:12px 18px !important;
+  box-shadow:none !important;
+}
+.stButton > button:hover { filter:brightness(1.05); }
+
+/* 4) ตาราง/เมตริกให้ตัวอักษรอ่านง่าย */
+[data-testid="stMetricValue"], [data-testid="stMetricLabel"] { color:#111827 !important; }
+[data-testid="stDataFrame"] * { color:#111827 !important; }
+
     </style>
     """,
     unsafe_allow_html=True,
