@@ -16,7 +16,7 @@ BG1        = "#FFF7FB"   # blush
 BG2        = "#F3F7FF"   # baby-blue
 SOFT_LINE  = "#E8ECF3"
 LOGO_PATH  = "logo.png"
-FAVICON    = "🎀"
+FAVICON    = "🪙"
 
 st.set_page_config(
     page_title=f"{BRAND_NAME} — {TAGLINE}",
@@ -171,7 +171,7 @@ with c_head:
         f"""
         <div class='app-header'>
           <div>
-            <div class='brand-title'>✨ {BRAND_NAME}</div>
+            <div class='brand-title'> {BRAND_NAME}</div>
             <div class='brand-subtitle'>{TAGLINE}</div>
           </div>
         </div>
