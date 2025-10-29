@@ -31,19 +31,23 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
+      /* ซ่อน Sidebar */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
 
+      /* พื้นหลังแบบ gradient อ่อนๆ */
       .stApp {{
         background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%);
       }}
 
+      /* ฟอนต์หลัก */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
+      /* Header card */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:18px 20px;
         border-radius:18px; background: rgba(255,255,255,0.85);
@@ -53,14 +57,17 @@ st.markdown(
       .brand-title   {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
       .brand-subtitle{{ font-size:13px;  color:#6B7280; margin:3px 0 0 0; }}
 
+      /* Section title */
       .section-title {{
         display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Inputs: white bg + dark text */
+      /* Input text สีดำ พื้นหลังขาว */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
-      .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
+      .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{
+        color:{ACCENT} !important;
+      }}
 
       div[data-baseweb="input"] > div,
       div[data-baseweb="select"] > div {{
@@ -70,37 +77,81 @@ st.markdown(
         border-radius:12px !important;
         box-shadow:none !important;
       }}
+
       div[data-baseweb="input"] input,
       div[data-baseweb="select"] input {{
         color:{ACCENT} !important;
         background:#FFFFFF !important;
       }}
+
+      /* Number Input */
       .stNumberInput > div > div {{
         background:#FFFFFF !important;
         border:1px solid #E5E7EB !important;
         border-radius:12px !important;
       }}
-      .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
-      .stSelectbox > div {{
-        background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important;
+      .stNumberInput input {{
+        color:{ACCENT} !important;
+        background:#FFFFFF !important;
       }}
-      div[role="listbox"] * {{ color:{ACCENT} !important; }}
-      div[role="listbox"] {{ background:#FFFFFF !important; }}
 
+      /* Select Box */
+      .stSelectbox > div {{
+        background:#FFFFFF !important;
+        border:1px solid #E5E7EB !important;
+        border-radius:12px !important;
+      }}
+      div[role="listbox"] * {{
+        color:{ACCENT} !important;
+      }}
+      div[role="listbox"] {{
+        background:#FFFFFF !important;
+      }}
+
+      /* ปรับลูกศร dropdown ให้เป็นสีดำ */
+      div[data-baseweb="select"] svg,
+      div[data-baseweb="select"] svg path {{
+        color: #111827 !important;
+        fill:  #111827 !important;
+        opacity: 1 !important;
+      }}
+      div[data-baseweb="select"]:hover svg,
+      div[data-baseweb="select"]:hover svg path,
+      div[data-baseweb="select"]:focus-within svg,
+      div[data-baseweb="select"]:focus-within svg path {{
+        color: #111827 !important;
+        fill:  #111827 !important;
+        opacity: 1 !important;
+      }}
+
+      /* ปุ่มกด */
       .stButton > button {{
-        background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
-        border-radius:14px !important; padding:10px 16px !important;
+        background:{PRIMARY} !important;
+        color:#FFFFFF !important;
+        border:0 !important;
+        border-radius:14px !important;
+        padding:10px 16px !important;
         box-shadow:0 8px 24px rgba(124,131,253,0.30) !important;
       }}
-      .stButton > button:hover {{ filter:brightness(1.03); }}
+      .stButton > button:hover {{
+        filter:brightness(1.05);
+      }}
 
-      [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
-      [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
-      [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
+      /* ตารางและ Metric */
+      [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
+        color:{ACCENT} !important;
+      }}
+      [data-testid="stDataFrame"] * {{
+        color:{ACCENT} !important;
+      }}
+      [data-testid="stDataFrame"] div[role="columnheader"] {{
+        background:#F7F8FF !important;
+      }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 # =========================
 # HEADER
