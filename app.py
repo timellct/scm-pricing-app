@@ -5,19 +5,17 @@ from datetime import date
 from io import BytesIO
 
 # =========================
-# CUTE BRAND (Pastel, readable)
+# BRAND / THEME (Pastel + readable)
 # =========================
 BRAND_NAME = "Security Pitch"
 TAGLINE    = "SCM Pricing Calculator"
 
-# Pastel palette + dark readable text
 PRIMARY    = "#7C83FD"   # lavender
 ACCENT     = "#111827"   # near-black readable text
 BG1        = "#FFF7FB"   # blush
 BG2        = "#F3F7FF"   # baby-blue
 CARD_BG    = "#FFFFFF"
 SOFT_LINE  = "#E8ECF3"
-WARNING    = "#F43F5E"
 LOGO_PATH  = "logo.png"
 FAVICON    = "🎀"
 
@@ -85,14 +83,12 @@ st.markdown(
         border-radius:12px !important;
         box-shadow:none !important;
       }}
-
       div[data-baseweb="input"] input,
       div[data-baseweb="select"] input {{
         color:{ACCENT} !important;
         background:#FFFFFF !important;
       }}
-
-      .stNumberInput > div > div {{
+      .stNumberInput > div > div {{  /* number input box */
         background:#FFFFFF !important;
         border:1px solid #E5E7EB !important;
         border-radius:12px !important;
@@ -100,7 +96,6 @@ st.markdown(
       .stNumberInput input {{
         color:{ACCENT} !important; background:#FFFFFF !important;
       }}
-
       .stSelectbox > div {{
         background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important;
       }}
@@ -152,10 +147,20 @@ with c_head:
 # =========================
 # PRICING CONSTANTS / LOGIC
 # =========================
+# — Camera / AI tiers
 CAMERA_TIERS = [(10, 1800), (30, 1600), (50, 1500), (100, 1300)]
 T1_TIERS     = [(50, 11000), (100, 8000)]
 T2_TIERS     = [(50, 5600), (100, 4500)]
-STORAGE_BASE = {1: 1670, 2: 2030, 4: 2930, 6: 4990, 8: 6890, 10: 10990}
+
+# — Storage base price (ไม่รวม VAT/Markup)
+STORAGE_BASE = {
+    1:  1670,   # WD Purple
+    2:  2030,   # WD Purple
+    4:  2930,   # WD Purple
+    6:  4990,   # Seagate SkyHawk
+    8:  6890,   # Seagate SkyHawk AI
+    10: 10990,  # WD Purple Pro
+}
 
 BASE_LICENSE     = 45000
 AI_BASE_LICENSE  = 15000
@@ -171,7 +176,34 @@ def tier_price(qty: int, tiers):
             return price
     return None  # exceeds max -> trigger contact sales
 
-def calc(total, cust_type, t1, t2, include_storage, storage_tb):
+def choose_storage_combo(required_tb: int):
+    """
+    เลือกชุด HDD ให้ความจุรวม >= required_tb
+    กติกา: ถ้าต้องการความจุที่ไม่พอดีกับ SKU ให้ปัดขึ้นไปใช้ SKU ที่เล็กสุดที่ครอบคลุม
+    เช่น ต้องการ 5 TB -> ใช้ 6 TB, ต้องการ 15 TB -> ใช้ 10 TB + 6 TB (รวม 16)
+    คืนค่า: dict {size_tb: qty}
+    """
+    if required_tb <= 0:
+        return {}
+
+    sizes_sorted = sorted(STORAGE_BASE.keys())             # [1,2,4,6,8,10]
+    sizes_desc   = sorted(STORAGE_BASE.keys(), reverse=True)
+
+    combo = {}
+    remaining = required_tb
+
+    while remaining > 0:
+        if remaining > max(sizes_sorted):
+            pick = max(sizes_sorted)  # 10 TB
+        else:
+            # smallest size >= remaining
+            pick = next(s for s in sizes_sorted if s >= remaining)
+        combo[pick] = combo.get(pick, 0) + 1
+        remaining -= pick
+
+    return combo
+
+def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
     if t1 + t2 > total:
         return {"status": "ERROR", "message": "AI cameras exceed total cameras."}
     if total > 100 or t1 > 100 or t2 > 100:
@@ -192,18 +224,29 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     hw_unit_price = (HW_BASE * (1 + mu)) if hw_units > 0 else 0
     hw_sub        = hw_units * hw_unit_price
 
-    storage_sub = 0
+    # ----- Storage (TB manual) -----
+    storage_lines = []
+    storage_sub   = 0
     if include_storage:
-        base = STORAGE_BASE.get(storage_tb)
-        if base is None:
-            return {"status": "ERROR", "message": "Invalid storage TB."}
-        storage_sub = base * (1 + mu)
+        if storage_tb_total is None or storage_tb_total <= 0:
+            return {"status": "ERROR", "message": "Please enter required Storage TB (>0)."}
+        combo = choose_storage_combo(int(storage_tb_total))
+        # Create a line per drive size
+        for size_tb, qty in sorted(combo.items(), reverse=True):
+            base = STORAGE_BASE[size_tb]
+            unit_after_markup = base * (1 + mu)
+            sub = qty * unit_after_markup
+            storage_sub += sub
+            storage_lines.append(
+                (f"HDD {size_tb} TB", qty, unit_after_markup, sub)
+            )
 
     grand    = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
     discount = -0.20 * grand if cust_type == "SI" else 0
     net      = grand + discount
     ma       = MA_RATE * net
 
+    # Build line items
     lines = [
         ("Base License", 1, BASE_LICENSE, base_sub),
         ("Cameras", total, cam_unit or 0, cams_sub),
@@ -211,8 +254,10 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
         ("AI Licenses — Tier 1", t1, t1_unit or 0, ai_t1_sub),
         ("AI Licenses — Tier 2", t2, t2_unit or 0, ai_t2_sub),
         ("AI Processing Equipment", hw_units, hw_unit_price, hw_sub),
-        ("Storage (HDD)", 1 if include_storage else 0, storage_sub if include_storage else 0, storage_sub),
     ]
+    # append storage detail lines (already marked up)
+    lines.extend(storage_lines)
+
     return {"status":"OK","lines":lines,"grand_total":grand,"discount":discount,"net_total":net,"ma_yearly":ma}
 
 def thb(n):
@@ -231,7 +276,12 @@ with st.form("inputs", border=False):
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1)
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
-    storage_tb = c2.selectbox("Storage TB", [1, 2, 4, 6, 8, 10], index=4) if include_storage else None
+
+    # New: manual TB input when storage is included
+    storage_tb_total = None
+    if include_storage:
+        storage_tb_total = c2.number_input("Storage Required (TB)", min_value=1, value=8, step=1)
+
     st.markdown("</div>", unsafe_allow_html=True)
     submitted = st.form_submit_button("Calculate ✨", use_container_width=True)
 
@@ -239,7 +289,7 @@ with st.form("inputs", border=False):
 # RESULTS
 # =========================
 if submitted:
-    r = calc(total, cust_type, t1, t2, include_storage, storage_tb)
+    r = calc(total, cust_type, t1, t2, include_storage, storage_tb_total)
 
     if r["status"] == "ERROR":
         st.error(r["message"])
@@ -270,7 +320,7 @@ if submitted:
                 st.metric(label, value)
                 st.markdown("</div>", unsafe_allow_html=True)
 
-        # Single table ready for client: Line Items + Totals rows
+        # Quote table: items + totals rows
         st.markdown("<div class='section-title'>🧾 Quote Table</div>", unsafe_allow_html=True)
         line_rows = [
             {"Item": n, "Qty": q, "Unit Price (THB)": (thb(u) if u else "-"), "Subtotal (THB)": (thb(s) if s else "-")}
@@ -278,10 +328,10 @@ if submitted:
         ]
         totals_rows = [
             {"Item":"", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)":""},
-            {"Item":"Grand Total (THB)",        "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["grand_total"])},
-            {"Item":"Partner Discount (THB)",   "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["discount"])},
-            {"Item":"Net Total (THB)",          "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["net_total"])},
-            {"Item":"MA 20%/yr (info)",         "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["ma_yearly"])},
+            {"Item":"Grand Total (THB)",      "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["grand_total"])},
+            {"Item":"Partner Discount (THB)", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["discount"])},
+            {"Item":"Net Total (THB)",        "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["net_total"])},
+            {"Item":"MA 20%/yr (info)",       "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["ma_yearly"])},
         ]
         quote_df = pd.DataFrame(line_rows + totals_rows)
         st.dataframe(quote_df, use_container_width=True)
@@ -292,7 +342,6 @@ if submitted:
             with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
                 df.to_excel(writer, sheet_name="Quote", index=False)
                 ws = writer.sheets["Quote"]
-                # Autofit-ish
                 for i, col in enumerate(df.columns):
                     width = max(14, int(df[col].astype(str).map(len).max()) + 2)
                     ws.set_column(i, i, width)
@@ -300,7 +349,7 @@ if submitted:
 
         xlsx_bytes = build_excel(quote_df)
         st.download_button(
-            "📥 Download Quote (Excel — 1 sheet)",
+            "📥 Download Quote",
             data=xlsx_bytes,
             file_name=f"SCM_Quote_{date.today().isoformat()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
