@@ -2,6 +2,7 @@ import streamlit as st
 import pandas as pd
 from math import ceil
 from datetime import date
+from io import BytesIO
 
 # =========================
 # BRAND SETTINGS (edit here)
@@ -32,11 +33,9 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-      /* Base + brand */
       .stApp {{ background-color: #FFFFFF; }}
       :root {{ --primary-color: {PRIMARY}; --accent-color: {ACCENT}; }}
 
-      /* App header panel */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:14px 18px;
         border-radius:14px; background: linear-gradient(90deg, {PRIMARY}14, {PRIMARY}08);
@@ -45,32 +44,26 @@ st.markdown(
       .brand-title {{ font-weight:800; font-size:24px; color:{ACCENT}; margin:0; }}
       .brand-subtitle {{ font-size:13px; color:#4B5563; margin:2px 0 0 0; }}
 
-      /* Panels */
       .panel {{ background:{HIGHLIGHT_BG}; padding:16px; border-radius:12px; border:1px solid #E5E7EB; }}
 
-      /* UNIVERSAL dark text */
       html, body, [class^="css"], [class*="css"] {{ color:{ACCENT} !important; }}
       label, .stMarkdown p {{ color:{ACCENT} !important; }}
       .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
-      /* Section titles */
       .section-title {{
         color:{ACCENT}; font-weight:800; font-size:22px;
         margin:6px 0 12px 0; padding-bottom:6px; border-bottom:2px solid #E5E7EB;
       }}
 
-      /* Metric cards */
       [data-testid="stMetricLabel"], [data-testid="stMetricValue"] {{ color:{ACCENT} !important; }}
       .kpi .metric-label {{ color:#6B7280 !important; font-size:12px !important; }}
       .kpi .metric-value {{ font-size:22px !important; font-weight:800 !important; color:{ACCENT} !important; }}
 
-      /* Dataframe styling */
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{
         background:#F3F4F6 !important; color:{ACCENT} !important;
       }}
 
-      /* Buttons */
       .stButton > button {{
         background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
       }}
@@ -120,19 +113,18 @@ STORAGE_BASE = {1: 1670, 2: 2030, 4: 2930, 6: 4990, 8: 6890, 10: 10990}
 
 BASE_LICENSE     = 45000
 AI_BASE_LICENSE  = 15000
-T1_CAP, T2_CAP   = 10, 14      # cameras per unit of AI processing
+T1_CAP, T2_CAP   = 10, 14      # cameras per hardware unit
 HW_BASE          = 65000       # base price per hardware unit (before markup)
 SI_MU, NONSI_MU  = 0.20, 0.30  # storage/hardware markup
 MA_RATE          = 0.20        # info only
 
 def tier_price(qty: int, tiers):
-    """Return unit price from a tier table (or None if over max)."""
     if qty == 0:
         return 0
     for bound, price in tiers:
         if qty <= bound:
             return price
-    return None  # triggers contact sales upstream
+    return None  # over max tier
 
 def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     # Validation
@@ -145,10 +137,8 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     cam_unit = tier_price(total, CAMERA_TIERS)
     t1_unit  = tier_price(t1, T1_TIERS)
     t2_unit  = tier_price(t2, T2_TIERS)
+    mu       = SI_MU if cust_type == "SI" else NONSI_MU
 
-    mu = SI_MU if cust_type == "SI" else NONSI_MU
-
-    # Line items
     base_sub     = BASE_LICENSE
     cams_sub     = total * (cam_unit or 0)
     ai_base_sub  = (1 if t1 + t2 > 0 else 0) * AI_BASE_LICENSE
@@ -160,7 +150,7 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     hw_unit_price = (HW_BASE * (1 + mu)) if hw_units > 0 else 0
     hw_sub        = hw_units * hw_unit_price
 
-    # Storage (manual TB from list, with markup)
+    # Storage (manual list, with markup)
     storage_sub = 0
     if include_storage:
         base = STORAGE_BASE.get(storage_tb)
@@ -168,7 +158,6 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
             return {"status": "ERROR", "message": "Invalid storage TB."}
         storage_sub = base * (1 + mu)
 
-    # Totals
     grand    = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
     discount = -0.20 * grand if cust_type == "SI" else 0
     net      = grand + discount
@@ -229,8 +218,8 @@ st.sidebar.caption(f"© {date.today().year} {BRAND_NAME}. All rights reserved.")
 st.markdown("<div class='section-title'>Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs"):
     c1, c2 = st.columns(2)
-    total = c1.number_input("Total Cameras", min_value=0, value=22, step=1, help="Total number of cameras in the project.")
-    cust_type = c2.selectbox("Customer Type", ["SI", "Non-SI"], help="Applies discount/markup rules.")
+    total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
+    cust_type = c2.selectbox("Customer Type", ["SI", "Non-SI"])
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1)
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
@@ -276,7 +265,7 @@ if submitted:
             st.metric("MA 20%/yr (THB)", thb(r["ma_yearly"]))
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Line items
+        # Line items table
         st.markdown("<div class='section-title'>Line Items</div>", unsafe_allow_html=True)
         df = pd.DataFrame(
             [
@@ -293,32 +282,44 @@ if submitted:
         st.dataframe(df, use_container_width=True)
         st.markdown("<div class='table-note'>MA is informational and not included in Net Total.</div>", unsafe_allow_html=True)
 
-        # Exports
-        colA, colB = st.columns(2)
-        with colA:
-            st.download_button(
-                "Download Line Items (CSV)",
-                data=df.to_csv(index=False).encode("utf-8"),
-                file_name=f"SCM_Line_Items_{date.today().isoformat()}.csv",
-                mime="text/csv",
-                use_container_width=True,
-            )
-        with colB:
-            totals_df = pd.DataFrame(
-                {
-                    "Grand Total (THB)": [thb(r["grand_total"])],
-                    "Partner Discount (THB)": [thb(r["discount"])],
-                    "Net Total (THB)": [thb(r["net_total"])],
-                    "MA 20%/yr (THB)": [thb(r["ma_yearly"])],
-                }
-            )
-            st.download_button(
-                "Download Totals (CSV)",
-                data=totals_df.to_csv(index=False).encode("utf-8"),
-                file_name=f"SCM_Totals_{date.today().isoformat()}.csv",
-                mime="text/csv",
-                use_container_width=True,
-            )
+        # -----------------------------
+        # Single Download: Excel (2 tabs)
+        # -----------------------------
+        def build_excel(line_items_df: pd.DataFrame, totals: dict) -> bytes:
+            buffer = BytesIO()
+            with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
+                # Line Items sheet
+                li = line_items_df.copy()
+                li.to_excel(writer, sheet_name="Line Items", index=False)
+                # Autofit-ish
+                ws1 = writer.sheets["Line Items"]
+                for i, col in enumerate(li.columns):
+                    width = max(12, int(li[col].astype(str).map(len).max()) + 2)
+                    ws1.set_column(i, i, width)
+
+                # Totals sheet
+                totals_df = pd.DataFrame(
+                    {
+                        "Field": ["Grand Total (THB)", "Partner Discount (THB)", "Net Total (THB)", "MA 20%/yr (THB)"],
+                        "Value": [thb(r["grand_total"]), thb(r["discount"]), thb(r["net_total"]), thb(r["ma_yearly"])],
+                    }
+                )
+                totals_df.to_excel(writer, sheet_name="Totals", index=False)
+                ws2 = writer.sheets["Totals"]
+                ws2.set_column(0, 0, 26)
+                ws2.set_column(1, 1, 20)
+
+            return buffer.getvalue()
+
+        xlsx_bytes = build_excel(df, r)
+
+        st.download_button(
+            "Download Quote (Excel)",
+            data=xlsx_bytes,
+            file_name=f"SCM_Quote_{date.today().isoformat()}.xlsx",
+            mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+            use_container_width=True,
+        )
 
 # =========================
 # FOOTER
