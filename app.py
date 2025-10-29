@@ -67,51 +67,56 @@ st.markdown(
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
-      /* Inputs: white bg + dark text */
-      div[data-baseweb="input"] > div,
-      div[data-baseweb="select"] > div {{
+      /* Inputs: white bg + dark text (number inputs) */
+      div[data-baseweb="input"] > div {{
         background:#FFFFFF !important;
         color:{ACCENT} !important;
-        border:1px solid #E5E7EB !important;
+        border:1px solid #111827 !important;
         border-radius:12px !important;
         box-shadow:none !important;
       }}
-      div[data-baseweb="input"] input,
-      div[data-baseweb="select"] input {{
+      div[data-baseweb="input"] input {{
         color:{ACCENT} !important;
         background:#FFFFFF !important;
       }}
       .stNumberInput > div > div {{
         background:#FFFFFF !important;
-        border:1px solid #E5E7EB !important;
+        border:1px solid #111827 !important;
         border-radius:12px !important;
       }}
       .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
 
-      /* >>> Make SELECT boxes as visible as number inputs <<< */
+      /* === SELECT (Customer Type / Include Storage) : single border like others === */
       div[data-baseweb="select"] > div,
+      div[data-baseweb="select"] > div > div,
       .stSelectbox > div {{
-        border: 2px solid #111827 !important;               /* darker border */
-        background: #FFFFFF !important;
-        border-radius: 12px !important;
+        background:#FFFFFF !important;
+        color:#111827 !important;
+        border:1px solid #111827 !important;   /* เส้นเดียว */
+        border-radius:12px !important;
+        box-shadow:none !important;
+        outline:none !important;
       }}
+      /* ปิดแสงตอน hover/focus เพื่อไม่ให้มีขอบซ้อน */
       div[data-baseweb="select"] > div:hover,
+      div[data-baseweb="select"] > div:focus,
       div[data-baseweb="select"] > div:focus-within,
       .stSelectbox > div:hover,
+      .stSelectbox > div:focus,
       .stSelectbox > div:focus-within {{
-        box-shadow: 0 0 0 3px rgba(124,131,253,0.25) !important; /* focus ring */
-        border-color: #111827 !important;
+        box-shadow:none !important;
+        border-color:#111827 !important;
       }}
+      /* caret ให้เข้ม */
       div[data-baseweb="select"] svg,
       .stSelectbox svg {{
-        color: #111827 !important; opacity: 1 !important;
+        color:#111827 !important; opacity:1 !important;
       }}
       div[data-baseweb="select"] svg path,
-      .stSelectbox svg path {{
-        fill: #111827 !important;
-      }}
-      div[role="listbox"] * {{ color: #111827 !important; }}
-      div[role="listbox"]   {{ background: #FFFFFF !important; }}
+      .stSelectbox svg path {{ fill:#111827 !important; }}
+      /* dropdown list */
+      div[role="listbox"]   {{ background:#FFFFFF !important; }}
+      div[role="listbox"] * {{ color:#111827 !important; }}
 
       /* Buttons */
       .stButton > button {{
