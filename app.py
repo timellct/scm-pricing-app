@@ -25,7 +25,7 @@ st.set_page_config(
     page_title=f"{BRAND_NAME} — {TAGLINE}",
     page_icon=FAVICON,
     layout="centered",
-    initial_sidebar_state="collapsed",  # collapse by default
+    initial_sidebar_state="collapsed",  # hide sidebar
 )
 
 # =========================
@@ -34,7 +34,7 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-      /* Hide sidebar and collapse handle completely */
+      /* Hide sidebar completely */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
 
@@ -47,7 +47,7 @@ st.markdown(
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
-        color: {ACCENT} !important;    /* <<< force DARK text everywhere */
+        color: {ACCENT} !important;
       }}
 
       /* Header card (glass) */
@@ -72,20 +72,40 @@ st.markdown(
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Make ALL form/label text dark & inputs readable */
+      /* Force all headings/labels to dark text */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
-      /* Input text color inside widgets */
-      input, textarea, .stTextInput input, .stNumberInput input, .stSelectbox div,
-      .stMultiSelect div, .stDateInput input {{
+      /* ===== Inputs: white background + dark text + soft border ===== */
+      div[data-baseweb="input"] > div,
+      div[data-baseweb="select"] > div {{
+        background:#FFFFFF !important;
         color:{ACCENT} !important;
+        border:1px solid #E5E7EB !important;
+        border-radius:12px !important;
+        box-shadow:none !important;
       }}
 
-      /* Select/number boxes rounded */
-      .stSelectbox > div > div, .stNumberInput > div > div > input {{
+      div[data-baseweb="input"] input,
+      div[data-baseweb="select"] input {{
+        color:{ACCENT} !important;
+        background:#FFFFFF !important;
+      }}
+
+      .stNumberInput > div > div {{
+        background:#FFFFFF !important;
+        border:1px solid #E5E7EB !important;
         border-radius:12px !important;
       }}
+      .stNumberInput input {{
+        color:{ACCENT} !important; background:#FFFFFF !important;
+      }}
+
+      .stSelectbox > div {{
+        background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important;
+      }}
+      div[role="listbox"] * {{ color:{ACCENT} !important; }}
+      div[role="listbox"] {{ background:#FFFFFF !important; }}
 
       /* Buttons */
       .stButton > button {{
@@ -195,7 +215,7 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     ]
     return {"status":"OK","lines":lines,"grand_total":grand,"discount":discount,"net_total":net,"ma_yearly":ma}
 
-def thb(n):  # format THB integer with comma
+def thb(n):
     try: return f"{int(round(n)):,}"
     except Exception: return "-"
 
@@ -256,7 +276,6 @@ if submitted:
             {"Item": n, "Qty": q, "Unit Price (THB)": (thb(u) if u else "-"), "Subtotal (THB)": (thb(s) if s else "-")}
             for (n, q, u, s) in r["lines"] if not (q == 0 and s == 0)
         ]
-        # blank spacer + totals rows
         totals_rows = [
             {"Item":"", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)":""},
             {"Item":"Grand Total (THB)",        "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["grand_total"])},
