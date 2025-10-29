@@ -31,23 +31,19 @@ st.set_page_config(
 st.markdown(
     f"""
     <style>
-      /* Hide sidebar controls */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
 
-      /* Background gradient */
       .stApp {{
         background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%);
       }}
 
-      /* Font */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
-      /* Header card */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:18px 20px;
         border-radius:18px; background: rgba(255,255,255,0.85);
@@ -57,17 +53,15 @@ st.markdown(
       .brand-title   {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
       .brand-subtitle{{ font-size:13px;  color:#6B7280; margin:3px 0 0 0; }}
 
-      /* Section title */
       .section-title {{
         display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Text colors force */
+      /* Inputs: white bg + dark text */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
-      /* Inputs: white bg + dark text */
       div[data-baseweb="input"] > div,
       div[data-baseweb="select"] > div {{
         background:#FFFFFF !important;
@@ -87,33 +81,12 @@ st.markdown(
         border-radius:12px !important;
       }}
       .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
-
-      /* >>> Make SELECT boxes as visible as number inputs <<< */
-      div[data-baseweb="select"] > div,
       .stSelectbox > div {{
-        border: 2px solid #111827 !important;               /* darker border */
-        background: #FFFFFF !important;
-        border-radius: 12px !important;
+        background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important;
       }}
-      div[data-baseweb="select"] > div:hover,
-      div[data-baseweb="select"] > div:focus-within,
-      .stSelectbox > div:hover,
-      .stSelectbox > div:focus-within {{
-        box-shadow: 0 0 0 3px rgba(124,131,253,0.25) !important; /* focus ring */
-        border-color: #111827 !important;
-      }}
-      div[data-baseweb="select"] svg,
-      .stSelectbox svg {{
-        color: #111827 !important; opacity: 1 !important;
-      }}
-      div[data-baseweb="select"] svg path,
-      .stSelectbox svg path {{
-        fill: #111827 !important;
-      }}
-      div[role="listbox"] * {{ color: #111827 !important; }}
-      div[role="listbox"]   {{ background: #FFFFFF !important; }}
+      div[role="listbox"] * {{ color:{ACCENT} !important; }}
+      div[role="listbox"] {{ background:#FFFFFF !important; }}
 
-      /* Buttons */
       .stButton > button {{
         background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
         border-radius:14px !important; padding:10px 16px !important;
@@ -121,7 +94,6 @@ st.markdown(
       }}
       .stButton > button:hover {{ filter:brightness(1.03); }}
 
-      /* Tables & Metrics */
       [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
@@ -162,7 +134,6 @@ CAMERA_TIERS = [(10, 1800), (30, 1600), (50, 1500), (100, 1300)]
 T1_TIERS     = [(50, 11000), (100, 8000)]
 T2_TIERS     = [(50, 5600), (100, 4500)]
 
-# Storage base (ก่อนบวกมาร์กอัป)
 STORAGE_BASE = {1:1670, 2:2030, 4:2930, 6:4990, 8:6890, 10:10990}
 
 BASE_LICENSE     = 45000
@@ -180,16 +151,13 @@ def tier_price(qty: int, tiers):
     return None  # exceeds max -> contact sales
 
 def choose_storage_combo(required_tb: int):
-    """
-    เลือกชุด HDD ให้ความจุรวม >= required_tb
-    กติกา: ปัดขึ้นด้วย SKU เล็กสุดที่ครอบคลุม (เช่น 15TB -> 10TB + 6TB = 16TB)
-    """
+    # Greedy: pick smallest SKU that covers remaining; ensures sum >= required
     if required_tb <= 0: return {}
-    sizes_sorted = sorted(STORAGE_BASE.keys())  # [1,2,4,6,8,10]
+    sizes_sorted = sorted(STORAGE_BASE.keys())             # [1,2,4,6,8,10]
     combo, remaining = {}, required_tb
     while remaining > 0:
         if remaining > sizes_sorted[-1]:
-            pick = sizes_sorted[-1]             # 10 TB
+            pick = sizes_sorted[-1]  # 10 TB
         else:
             pick = next(s for s in sizes_sorted if s >= remaining)
         combo[pick] = combo.get(pick, 0) + 1
@@ -224,7 +192,7 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
             return {"status":"ERROR","message":"Please enter required Storage TB (>0)."}
         combo = choose_storage_combo(int(storage_tb_total))
         for size_tb, qty in sorted(combo.items(), reverse=True):
-            unit_after_markup = STORAGE_BASE[size_tb] * (1 + mu)  # บวกมาร์กอัป
+            unit_after_markup = STORAGE_BASE[size_tb] * (1 + mu)
             sub = qty * unit_after_markup
             storage_sub += sub
             storage_lines.append((f"HDD {size_tb} TB", qty, unit_after_markup, sub))
@@ -251,7 +219,7 @@ def thb(n):
     except Exception: return "-"
 
 # =========================
-# INPUTS
+# INPUTS (no empty card wrappers)
 # =========================
 st.markdown("<div class='section-title'>🧁 Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs", border=False):
@@ -285,7 +253,7 @@ if submitted:
     else:
         st.balloons()
 
-        # Summary metrics
+        # Summary metrics (no empty card wrappers)
         st.markdown("<div class='section-title'>🧁 Summary</div>", unsafe_allow_html=True)
         k1, k2, k3, k4 = st.columns(4)
         with k1: st.metric("Grand Total (THB)", thb(r["grand_total"]))
