@@ -27,12 +27,16 @@ st.set_page_config(
 )
 
 # =========================
-# LIGHT STYLES
+# GLOBAL STYLES (high contrast)
 # =========================
 st.markdown(
     f"""
     <style>
+      /* Base + brand */
       .stApp {{ background-color: #FFFFFF; }}
+      :root {{ --primary-color: {PRIMARY}; --accent-color: {ACCENT}; }}
+
+      /* App header panel */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:14px 18px;
         border-radius:14px; background: linear-gradient(90deg, {PRIMARY}14, {PRIMARY}08);
@@ -40,15 +44,41 @@ st.markdown(
       }}
       .brand-title {{ font-weight:800; font-size:24px; color:{ACCENT}; margin:0; }}
       .brand-subtitle {{ font-size:13px; color:#4B5563; margin:2px 0 0 0; }}
+
+      /* Panels */
       .panel {{ background:{HIGHLIGHT_BG}; padding:16px; border-radius:12px; border:1px solid #E5E7EB; }}
+
+      /* UNIVERSAL dark text */
+      html, body, [class^="css"], [class*="css"] {{ color:{ACCENT} !important; }}
+      label, .stMarkdown p {{ color:{ACCENT} !important; }}
+      .stMarkdown h1, .stMarkdown h2, .stMarkdown h3, .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
+
+      /* Section titles */
+      .section-title {{
+        color:{ACCENT}; font-weight:800; font-size:22px;
+        margin:6px 0 12px 0; padding-bottom:6px; border-bottom:2px solid #E5E7EB;
+      }}
+
+      /* Metric cards */
+      [data-testid="stMetricLabel"], [data-testid="stMetricValue"] {{ color:{ACCENT} !important; }}
       .kpi .metric-label {{ color:#6B7280 !important; font-size:12px !important; }}
       .kpi .metric-value {{ font-size:22px !important; font-weight:800 !important; color:{ACCENT} !important; }}
+
+      /* Dataframe styling */
+      [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
+      [data-testid="stDataFrame"] div[role="columnheader"] {{
+        background:#F3F4F6 !important; color:{ACCENT} !important;
+      }}
+
+      /* Buttons */
+      .stButton > button {{
+        background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
+      }}
+
       .footer-note {{ color:#6B7280; font-size:12px; text-align:center; margin-top:8px; }}
       .contact-sales {{ color:{WARNING}; font-weight:800; font-size:18px; }}
       .badge {{ display:inline-block; background:{PRIMARY}14; color:{PRIMARY}; padding:4px 10px; border-radius:999px; font-size:12px; font-weight:700; }}
       .table-note {{ color:#6B7280; font-size:12px; margin-top:6px; }}
-      /* Improve label readability */
-      label, .stMarkdown p {{ color:{ACCENT} !important; }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -81,20 +111,24 @@ with cols[1]:
     )
 
 # =========================
-# CONSTANTS (pricing logic)
+# PRICING CONSTANTS / LOGIC
 # =========================
 CAMERA_TIERS = [(10, 1800), (30, 1600), (50, 1500), (100, 1300)]
 T1_TIERS     = [(50, 11000), (100, 8000)]
 T2_TIERS     = [(50, 5600), (100, 4500)]
 STORAGE_BASE = {1: 1670, 2: 2030, 4: 2930, 6: 4990, 8: 6890, 10: 10990}
+
 BASE_LICENSE     = 45000
 AI_BASE_LICENSE  = 15000
-T1_CAP, T2_CAP   = 10, 14
-HW_BASE          = 65000
-SI_MU, NONSI_MU  = 0.20, 0.30
-MA_RATE          = 0.20   # informational
+T1_CAP, T2_CAP   = 10, 14      # cameras per unit of AI processing
+HW_BASE          = 65000       # base price per hardware unit (before markup)
+SI_MU, NONSI_MU  = 0.20, 0.30  # storage/hardware markup
+MA_RATE          = 0.20        # info only
 
 def tier_price(qty: int, tiers):
+    """Return unit price from a tier table (or None if over max)."""
+    if qty == 0:
+        return 0
     for bound, price in tiers:
         if qty <= bound:
             return price
@@ -104,26 +138,29 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
     # Validation
     if t1 + t2 > total:
         return {"status": "ERROR", "message": "AI cameras exceed total cameras."}
-
     # Contact Sales gate
     if total > 100 or t1 > 100 or t2 > 100:
         return {"status": "CONTACT_SALES", "reason": "Total cameras or an AI tier exceeds 100."}
 
     cam_unit = tier_price(total, CAMERA_TIERS)
-    t1_unit  = tier_price(t1, T1_TIERS) if t1 > 0 else 0
-    t2_unit  = tier_price(t2, T2_TIERS) if t2 > 0 else 0
-    mu       = SI_MU if cust_type == "SI" else NONSI_MU
+    t1_unit  = tier_price(t1, T1_TIERS)
+    t2_unit  = tier_price(t2, T2_TIERS)
 
+    mu = SI_MU if cust_type == "SI" else NONSI_MU
+
+    # Line items
     base_sub     = BASE_LICENSE
-    cams_sub     = total * cam_unit
+    cams_sub     = total * (cam_unit or 0)
     ai_base_sub  = (1 if t1 + t2 > 0 else 0) * AI_BASE_LICENSE
     ai_t1_sub    = t1 * (t1_unit or 0)
     ai_t2_sub    = t2 * (t2_unit or 0)
 
-    hw_units      = ceil(t1 / T1_CAP + t2 / T2_CAP) if (t1 + t2) > 0 else 0
+    # Mixed hardware sizing
+    hw_units      = ceil((t1 / T1_CAP) + (t2 / T2_CAP)) if (t1 + t2) > 0 else 0
     hw_unit_price = (HW_BASE * (1 + mu)) if hw_units > 0 else 0
     hw_sub        = hw_units * hw_unit_price
 
+    # Storage (manual TB from list, with markup)
     storage_sub = 0
     if include_storage:
         base = STORAGE_BASE.get(storage_tb)
@@ -131,6 +168,7 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
             return {"status": "ERROR", "message": "Invalid storage TB."}
         storage_sub = base * (1 + mu)
 
+    # Totals
     grand    = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
     discount = -0.20 * grand if cust_type == "SI" else 0
     net      = grand + discount
@@ -138,10 +176,10 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb):
 
     lines = [
         ("Base License", 1, BASE_LICENSE, base_sub),
-        ("Cameras", total, cam_unit, cams_sub),
+        ("Cameras", total, cam_unit or 0, cams_sub),
         ("AI Base License", (1 if t1 + t2 > 0 else 0), AI_BASE_LICENSE, ai_base_sub),
-        ("AI Licenses — Tier 1", t1, t1_unit, ai_t1_sub),
-        ("AI Licenses — Tier 2", t2, t2_unit, ai_t2_sub),
+        ("AI Licenses — Tier 1", t1, t1_unit or 0, ai_t1_sub),
+        ("AI Licenses — Tier 2", t2, t2_unit or 0, ai_t2_sub),
         ("AI Processing Equipment", hw_units, hw_unit_price, hw_sub),
         ("Storage (HDD)", 1 if include_storage else 0, storage_sub if include_storage else 0, storage_sub),
     ]
@@ -188,7 +226,7 @@ st.sidebar.caption(f"© {date.today().year} {BRAND_NAME}. All rights reserved.")
 # =========================
 # INPUT PANEL
 # =========================
-st.markdown("#### Project Inputs")
+st.markdown("<div class='section-title'>Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs"):
     c1, c2 = st.columns(2)
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1, help="Total number of cameras in the project.")
@@ -238,7 +276,8 @@ if submitted:
             st.metric("MA 20%/yr (THB)", thb(r["ma_yearly"]))
             st.markdown("</div>", unsafe_allow_html=True)
 
-        # Line items table
+        # Line items
+        st.markdown("<div class='section-title'>Line Items</div>", unsafe_allow_html=True)
         df = pd.DataFrame(
             [
                 {
@@ -251,7 +290,6 @@ if submitted:
                 if not (qty == 0 and sub == 0)
             ]
         )
-        st.markdown("#### Line Items")
         st.dataframe(df, use_container_width=True)
         st.markdown("<div class='table-note'>MA is informational and not included in Net Total.</div>", unsafe_allow_html=True)
 
