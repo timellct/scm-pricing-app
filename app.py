@@ -127,20 +127,28 @@ st.markdown(
         input[type="number"] {{ -webkit-text-fill-color: #111827 !important; }}
       }}
 
-      /* ===== Better error messages (black text for visibility) ===== */
-      [data-testid="stNotification"] {{
-        border-radius: 12px !important;
+      /* ===== Force all error messages to show black text ===== */
+      [data-testid="stNotification"],
+      [data-testid="stNotification"] * {{
+        color: #111827 !important;         /* black text */
+        opacity: 1 !important;
+      }}
+      .stAlert, .stAlert * {{
+        color: #111827 !important;
+        opacity: 1 !important;
+      }}
+      div[role="alert"], div[role="alert"] * {{
+        color: #111827 !important;
+        opacity: 1 !important;
+      }}
+      [data-testid="stNotification"],
+      .stAlert,
+      div[role="alert"] {{
+        background: #FEE2E2 !important;    /* soft red background */
         border: 1px solid #FCA5A5 !important;
-        background: #FEE2E2 !important;               /* soft red bg */
+        border-radius: 12px !important;
         box-shadow: 0 2px 6px rgba(249,112,112,.25) !important;
         padding: 14px 18px !important;
-      }}
-      [data-testid="stNotification"] p,
-      [data-testid="stNotification"] span,
-      [data-testid="stNotification"] div {{
-        color: #111827 !important;                    /* black readable text */
-        font-weight: 700 !important;
-        font-size: 15px !important;
       }}
     </style>
     """,
