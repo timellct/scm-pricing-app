@@ -26,21 +26,24 @@ st.set_page_config(
 )
 
 # =========================
-# GLOBAL STYLES (with caret fix)
+# GLOBAL STYLES (pastel theme + caret fix + clearer errors)
 # =========================
 st.markdown(
     f"""
     <style>
+      /* Layout */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
       .stApp {{ background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%); }}
 
+      /* Font */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
+      /* Header card */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:18px 20px;
         border-radius:18px; background: rgba(255,255,255,0.85);
@@ -50,14 +53,17 @@ st.markdown(
       .brand-title {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
       .brand-subtitle{{ font-size:13px; color:#6B7280; margin:3px 0 0 0; }}
 
+      /* Section title */
       .section-title {{
         display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
+      /* Text colors */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
+      /* Inputs / selects */
       div[data-baseweb="input"] > div, div[data-baseweb="select"] > div {{
         background:#FFFFFF !important; color:{ACCENT} !important;
         border:1px solid #E5E7EB !important; border-radius:12px !important;
@@ -66,7 +72,6 @@ st.markdown(
       div[data-baseweb="input"] input, div[data-baseweb="select"] input {{
         color:{ACCENT} !important; background:#FFFFFF !important;
       }}
-
       .stNumberInput > div > div {{ background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important; }}
       .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
 
@@ -74,10 +79,12 @@ st.markdown(
       div[role="listbox"] * {{ color:{ACCENT} !important; }}
       div[role="listbox"] {{ background:#FFFFFF !important; }}
 
+      /* Dropdown arrow color */
       div[data-baseweb="select"] svg, div[data-baseweb="select"] svg path {{
         color:#111827 !important; fill:#111827 !important;
       }}
 
+      /* Buttons */
       .stButton > button {{
         background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
         border-radius:14px !important; padding:10px 16px !important;
@@ -85,40 +92,55 @@ st.markdown(
       }}
       .stButton > button:hover {{ filter:brightness(1.05); }}
 
+      /* Metrics + table */
       [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
 
-      /* toolbar icons visible on dark area */
+      /* DataFrame toolbar icons (make visible) */
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button svg {{
         color:#FFFFFF !important; fill:none !important; stroke:#FFFFFF !important; stroke-width:1.5 !important;
       }}
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg {{ filter:brightness(1.2); }}
 
-      /* ===== Caret (typing cursor) visibility fix for number/text inputs ===== */
+      /* ===== Caret (typing cursor) visibility fix ===== */
       .stNumberInput input,
       div[data-baseweb="input"] input[type="number"],
       div[data-baseweb="input"] input[type="text"],
       div[data-baseweb="select"] input[type="text"] {{
-        caret-color: #111827 !important;     /* make caret black */
-        color: #111827 !important;            /* ensure dark text */
-        background: #FFFFFF !important;       /* solid background behind caret */
+        caret-color: #111827 !important;    /* visible black caret */
+        color: #111827 !important;          /* ensure dark text */
+        background: #FFFFFF !important;     /* solid background behind caret */
       }}
-      /* Focus ring to make active field obvious */
+      /* Focus outline for active inputs */
       .stNumberInput > div > div:focus-within,
       div[data-baseweb="input"]:focus-within {{
         border-color: {PRIMARY} !important;
         box-shadow: 0 0 0 2px rgba(124,131,253,0.25) !important;
         outline: none !important;
       }}
-      /* Selection highlight color */
+      /* Text selection color */
       .stNumberInput input::selection,
-      div[data-baseweb="input"] input::selection {{
-        background: rgba(124,131,253,0.25);
-      }}
-      /* Safari/WebKit fallback for caret inside number fields */
+      div[data-baseweb="input"] input::selection {{ background: rgba(124,131,253,0.25); }}
+      /* Safari/WebKit caret fallback */
       @supports (-webkit-touch-callout: none) {{
         input[type="number"] {{ -webkit-text-fill-color: #111827 !important; }}
+      }}
+
+      /* ===== High-contrast error messages (st.error) ===== */
+      [data-testid="stNotification"] {{
+        border-radius: 12px !important;
+        border: 1px solid #FCA5A5 !important;         /* border red */
+        background: #FEE2E2 !important;               /* soft red bg */
+        box-shadow: 0 2px 6px rgba(249,112,112,.25) !important;
+        padding: 14px 18px !important;
+      }}
+      [data-testid="stNotification"] p,
+      [data-testid="stNotification"] span,
+      [data-testid="stNotification"] div {{
+        color: #B91C1C !important;                    /* deep red text */
+        font-weight: 700 !important;
+        font-size: 15px !important;
       }}
     </style>
     """,
