@@ -26,28 +26,28 @@ st.set_page_config(
 )
 
 # =========================
-# GLOBAL STYLES
+# GLOBAL STYLES (fixed icon color)
 # =========================
 st.markdown(
     f"""
     <style>
-      /* ซ่อน Sidebar */
+      /* hide sidebar */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
 
-      /* พื้นหลังแบบ gradient อ่อนๆ */
+      /* gradient background */
       .stApp {{
         background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%);
       }}
 
-      /* ฟอนต์หลัก */
+      /* fonts */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
-      /* Header card */
+      /* header card */
       .app-header {{
         display:flex; align-items:center; gap:16px; padding:18px 20px;
         border-radius:18px; background: rgba(255,255,255,0.85);
@@ -57,18 +57,17 @@ st.markdown(
       .brand-title   {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
       .brand-subtitle{{ font-size:13px;  color:#6B7280; margin:3px 0 0 0; }}
 
-      /* Section title */
+      /* section title */
       .section-title {{
         display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
         color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Input text สีดำ พื้นหลังขาว */
+      /* inputs */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{
         color:{ACCENT} !important;
       }}
-
       div[data-baseweb="input"] > div,
       div[data-baseweb="select"] > div {{
         background:#FFFFFF !important;
@@ -77,14 +76,13 @@ st.markdown(
         border-radius:12px !important;
         box-shadow:none !important;
       }}
-
       div[data-baseweb="input"] input,
       div[data-baseweb="select"] input {{
         color:{ACCENT} !important;
         background:#FFFFFF !important;
       }}
 
-      /* Number Input */
+      /* number inputs */
       .stNumberInput > div > div {{
         background:#FFFFFF !important;
         border:1px solid #E5E7EB !important;
@@ -95,36 +93,23 @@ st.markdown(
         background:#FFFFFF !important;
       }}
 
-      /* Select Box */
+      /* selectbox */
       .stSelectbox > div {{
         background:#FFFFFF !important;
         border:1px solid #E5E7EB !important;
         border-radius:12px !important;
       }}
-      div[role="listbox"] * {{
-        color:{ACCENT} !important;
-      }}
-      div[role="listbox"] {{
-        background:#FFFFFF !important;
-      }}
+      div[role="listbox"] * {{ color:{ACCENT} !important; }}
+      div[role="listbox"] {{ background:#FFFFFF !important; }}
 
-      /* ปรับลูกศร dropdown ให้เป็นสีดำ */
+      /* dropdown arrow black */
       div[data-baseweb="select"] svg,
       div[data-baseweb="select"] svg path {{
-        color: #111827 !important;
-        fill:  #111827 !important;
-        opacity: 1 !important;
-      }}
-      div[data-baseweb="select"]:hover svg,
-      div[data-baseweb="select"]:hover svg path,
-      div[data-baseweb="select"]:focus-within svg,
-      div[data-baseweb="select"]:focus-within svg path {{
-        color: #111827 !important;
-        fill:  #111827 !important;
-        opacity: 1 !important;
+        color:#111827 !important;
+        fill:#111827 !important;
       }}
 
-      /* ปุ่มกด */
+      /* buttons */
       .stButton > button {{
         background:{PRIMARY} !important;
         color:#FFFFFF !important;
@@ -135,7 +120,7 @@ st.markdown(
       }}
       .stButton > button:hover {{ filter:brightness(1.05); }}
 
-      /* ตารางและ Metric */
+      /* metrics & table */
       [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
         color:{ACCENT} !important;
       }}
@@ -144,27 +129,21 @@ st.markdown(
         background:#F7F8FF !important;
       }}
 
-      /* ===== DataFrame toolbar icons — force white ===== */
-      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg,
-      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg *,
-      [data-testid="stDataFrame"] [title="Download data as CSV"] svg,
-      [data-testid="stDataFrame"] [title="View fullscreen"] svg,
-      [data-testid="stDataFrame"] [aria-label="Search"] svg {{
+      /* FIXED: DataFrame toolbar icons — visible white-on-dark */
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button svg {{
         color:#FFFFFF !important;
-        fill:#FFFFFF !important;
-        stroke:#FFFFFF !important;
-        opacity:1 !important;
+        fill:none !important;         /* keep transparent background */
+        stroke:#FFFFFF !important;    /* outline white */
+        stroke-width:1.5 !important;
       }}
-      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg,
-      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:focus svg {{
-        color:#FFFFFF !important;
-        fill:#FFFFFF !important;
-        stroke:#FFFFFF !important;
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg {{
+        filter:brightness(1.2);
       }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 # =========================
 # HEADER
