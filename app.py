@@ -302,19 +302,42 @@ def thb(n):
 st.markdown("<div class='section-title'>🚀 Project Inputs</div>", unsafe_allow_html=True)
 with st.form("inputs", border=False):
     c1, c2 = st.columns(2)
-    # ใหม่: เลือกโมเดลราคา
+
+    # Pricing model + customer type
     mode = c1.selectbox("Pricing Model", ["One-Time Sell", "Subscription"])
     cust_type = c2.selectbox("Customer Type", ["Partner", "Non-Partner"])
 
+    # Cameras + AI usage
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
-    # ใหม่: ถามว่าจะใช้ AI หรือไม่
     ai_enabled = c2.selectbox("Use AI Analytics?", ["No", "Yes"]) == "Yes"
 
+    # AI tiers (disabled if not using AI)
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1, disabled=not ai_enabled)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1, disabled=not ai_enabled)
 
+    # Storage + helper link
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
-    storage_tb_total = c2.number_input("Storage Required (TB)", min_value=1, value=8, step=1) if include_storage else None
+    if include_storage:
+        storage_tb_total = c2.number_input("Storage Required (TB)", min_value=1, value=8, step=1)
+
+        # Helper link under the input (opens in new tab)
+        c2.markdown(
+            "<div style='margin-top:6px;font-size:13px'>"
+            "🔗 Need an estimate? "
+            "<a href='https://www.jvsg.com/storage-bandwidth-calculator/' "
+            "target='_blank' rel='noopener noreferrer'>Open JVSG Storage Calculator ↗</a>"
+            "</div>",
+            unsafe_allow_html=True,
+        )
+
+        # If you prefer a native button and your Streamlit version supports it, use this instead:
+        # c2.link_button(
+        #     "Open JVSG Storage Calculator ↗",
+        #     url="https://www.jvsg.com/storage-bandwidth-calculator/",
+        #     use_container_width=False
+        # )
+    else:
+        storage_tb_total = None
 
     submitted = st.form_submit_button("Calculate ✨", use_container_width=True)
 
