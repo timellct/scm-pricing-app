@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # =========================
-# GLOBAL STYLES (pastel theme + caret fix + clearer errors)
+# GLOBAL STYLES (pastel + caret fix + black error text)
 # =========================
 st.markdown(
     f"""
@@ -97,7 +97,7 @@ st.markdown(
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
 
-      /* DataFrame toolbar icons (make visible) */
+      /* DataFrame toolbar icons visible */
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button svg {{
         color:#FFFFFF !important; fill:none !important; stroke:#FFFFFF !important; stroke-width:1.5 !important;
       }}
@@ -127,10 +127,10 @@ st.markdown(
         input[type="number"] {{ -webkit-text-fill-color: #111827 !important; }}
       }}
 
-      /* ===== High-contrast error messages (st.error) ===== */
+      /* ===== Better error messages (black text for visibility) ===== */
       [data-testid="stNotification"] {{
         border-radius: 12px !important;
-        border: 1px solid #FCA5A5 !important;         /* border red */
+        border: 1px solid #FCA5A5 !important;
         background: #FEE2E2 !important;               /* soft red bg */
         box-shadow: 0 2px 6px rgba(249,112,112,.25) !important;
         padding: 14px 18px !important;
@@ -138,7 +138,7 @@ st.markdown(
       [data-testid="stNotification"] p,
       [data-testid="stNotification"] span,
       [data-testid="stNotification"] div {{
-        color: #B91C1C !important;                    /* deep red text */
+        color: #111827 !important;                    /* black readable text */
         font-weight: 700 !important;
         font-size: 15px !important;
       }}
