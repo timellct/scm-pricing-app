@@ -178,7 +178,7 @@ if submit:
             return buf.getvalue()
 
         st.download_button(
-            "📥 Download Quote (Excel — 1 sheet)",
+            "📥 Download Quote",
             data=to_excel(df),
             file_name=f"SCM_Quote_{date.today().isoformat()}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
