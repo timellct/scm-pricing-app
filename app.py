@@ -152,6 +152,26 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
+/* ===== Make DataFrame toolbar icons white ===== */
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg,
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg *,
+[data-testid="stDataFrame"] [title="Download data as CSV"] svg,
+[data-testid="stDataFrame"] [title="View fullscreen"] svg,
+[data-testid="stDataFrame"] [aria-label="Search"] svg {
+  color: #FFFFFF !important;
+  fill:  #FFFFFF !important;
+  stroke:#FFFFFF !important;
+  opacity: 1 !important;
+}
+
+/* keep them white on hover/focus too */
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg,
+[data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:focus svg {
+  color: #FFFFFF !important;
+  fill:  #FFFFFF !important;
+  stroke:#FFFFFF !important;
+}
+
 # =========================
 # HEADER
 # =========================
