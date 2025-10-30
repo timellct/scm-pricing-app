@@ -26,113 +26,74 @@ st.set_page_config(
 )
 
 # =========================
-# GLOBAL STYLES (pro polish)
+# GLOBAL STYLES (รวม fix ไอคอน toolbar ให้เห็นชัด)
 # =========================
 st.markdown(
     f"""
     <style>
-      /* Layout */
       section[data-testid="stSidebar"] {{ display:none !important; }}
       div[data-testid="collapsedControl"] {{ display:none !important; }}
-      .stApp {{ background: radial-gradient(1200px 600px at 20% -10%, #ffffffaa 0%, transparent 60%), linear-gradient(180deg, {BG1} 0%, {BG2} 100%); }}
+      .stApp {{ background: linear-gradient(180deg, {BG1} 0%, {BG2} 100%); }}
 
-      /* Font */
       @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700;800&display=swap');
       html, body, [class^="css"], [class*="css"] {{
         font-family: 'Plus Jakarta Sans', system-ui, -apple-system, Segoe UI, Roboto, sans-serif;
         color: {ACCENT} !important;
       }}
 
-      /* Header card */
       .app-header {{
-        display:flex; align-items:center; gap:16px; padding:22px 24px;
-        border-radius:22px; background: rgba(255,255,255,0.85);
-        border:1px solid {SOFT_LINE}; backdrop-filter: blur(8px);
-        box-shadow: 0 18px 48px rgba(17,24,39,0.08); margin-bottom: 12px;
+        display:flex; align-items:center; gap:16px; padding:18px 20px;
+        border-radius:18px; background: rgba(255,255,255,0.85);
+        border:1px solid {SOFT_LINE}; backdrop-filter: blur(6px);
+        box-shadow: 0 8px 24px rgba(124,131,253,0.12); margin-bottom: 6px;
       }}
-      .brand-title {{ font-weight:800; font-size:28px; color:{ACCENT}; margin:0; letter-spacing:.2px; }}
-      .brand-subtitle{{ font-size:13px; color:#6B7280; margin:4px 0 0 0; }}
+      .brand-title {{ font-weight:800; font-size:26px; color:{ACCENT}; margin:0; }}
+      .brand-subtitle{{ font-size:13px; color:#6B7280; margin:3px 0 0 0; }}
 
-      /* Section title */
       .section-title {{
-        display:flex; align-items:center; gap:12px; font-weight:800; font-size:22px;
-        color:{ACCENT}; margin:14px 0 14px 0;
-      }}
-      .section-sub {{
-        margin:-8px 0 18px 2px; font-size:13px; color:#6B7280;
+        display:flex; align-items:center; gap:10px; font-weight:800; font-size:22px;
+        color:{ACCENT}; margin:6px 0 12px 0;
       }}
 
-      /* Reusable card */
-      .card {{
-        border:1px solid {SOFT_LINE};
-        background: rgba(255,255,255,0.92);
-        backdrop-filter: blur(6px);
-        border-radius:18px;
-        padding:18px;
-        box-shadow: 0 10px 30px rgba(124,131,253,0.10);
-      }}
-
-      /* Inputs */
       label, .stMarkdown p, .stMarkdown h1, .stMarkdown h2, .stMarkdown h3,
       .stMarkdown h4, .stMarkdown h5, .stMarkdown h6 {{ color:{ACCENT} !important; }}
 
       div[data-baseweb="input"] > div, div[data-baseweb="select"] > div {{
         background:#FFFFFF !important; color:{ACCENT} !important;
-        border:1px solid #E5E7EB !important; border-radius:14px !important;
+        border:1px solid #E5E7EB !important; border-radius:12px !important;
         box-shadow:none !important;
       }}
       div[data-baseweb="input"] input, div[data-baseweb="select"] input {{
         color:{ACCENT} !important; background:#FFFFFF !important;
       }}
 
-      .stNumberInput > div > div {{ background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:14px !important; }}
+      .stNumberInput > div > div {{ background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important; }}
       .stNumberInput input {{ color:{ACCENT} !important; background:#FFFFFF !important; }}
 
-      .stSelectbox > div {{ background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:14px !important; }}
+      .stSelectbox > div {{ background:#FFFFFF !important; border:1px solid #E5E7EB !important; border-radius:12px !important; }}
       div[role="listbox"] * {{ color:{ACCENT} !important; }}
       div[role="listbox"] {{ background:#FFFFFF !important; }}
-      div[data-baseweb="select"] svg, div[data-baseweb="select"] svg path {{ color:#111827 !important; fill:#111827 !important; }}
 
-      /* Segmented pill radio (Streamlit radio horizontal) */
-      .seg-label {{ font-weight:600; font-size:14px; margin:0 0 6px 2px; }}
-      .stRadio [role="radiogroup"] {{ gap:8px; }}
-      .stRadio [data-baseweb="radio"] {{ display:none; }}
-      .stRadio label {{
-        display:inline-flex; align-items:center; padding:8px 12px; border-radius:999px;
-        border:1px solid #E5E7EB; background:#fff; cursor:pointer; user-select:none;
-        transition: all .15s ease; font-weight:600; font-size:13px;
+      div[data-baseweb="select"] svg, div[data-baseweb="select"] svg path {{
+        color:#111827 !important; fill:#111827 !important;
       }}
-      .stRadio input:checked + div + label,
-      .stRadio label[aria-checked="true"] {{
-        background:{PRIMARY}; color:#fff; border-color:{PRIMARY};
-        box-shadow: 0 6px 16px rgba(124,131,253,0.35);
-      }}
-      .stRadio label:hover {{ transform: translateY(-1px); }}
 
-      /* Buttons */
       .stButton > button {{
         background:{PRIMARY} !important; color:#FFFFFF !important; border:0 !important;
-        border-radius:14px !important; padding:12px 18px !important; font-weight:700;
-        box-shadow:0 12px 28px rgba(124,131,253,0.35) !important;
+        border-radius:14px !important; padding:10px 16px !important;
+        box-shadow:0 8px 24px rgba(124,131,253,0.30) !important;
       }}
-      .stButton > button:hover {{ filter:brightness(1.06); transform: translateY(-1px); }}
+      .stButton > button:hover {{ filter:brightness(1.05); }}
 
-      /* Metrics */
-      [data-testid="stMetricValue"] {{ font-size:28px !important; font-weight:800 !important; letter-spacing:.3px; }}
-      [data-testid="stMetricLabel"] {{ color:#6B7280 !important; font-weight:600 !important; }}
-
-      /* DataFrame */
+      [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
-      [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; font-weight:700; }}
+      [data-testid="stDataFrame"] div[role="columnheader"] {{ background:#F7F8FF !important; }}
+
+      /* toolbar icons visible on dark area */
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button svg {{
         color:#FFFFFF !important; fill:none !important; stroke:#FFFFFF !important; stroke-width:1.5 !important;
       }}
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg {{ filter:brightness(1.2); }}
-
-      /* Utility */
-      .muted {{ color:#6B7280; font-size:12px; }}
-      .chip {{ display:inline-flex; align-items:center; gap:6px; padding:6px 10px; border-radius:999px; background:#EEF2FF; color:#3730A3; font-weight:700; font-size:12px; }}
-      .spacer-8 {{ height:8px; }} .spacer-12 {{ height:12px; }} .spacer-16 {{ height:16px; }} .spacer-24 {{ height:24px; }}
     </style>
     """,
     unsafe_allow_html=True,
@@ -336,38 +297,30 @@ def thb(n):
     except Exception: return "-"
 
 # =========================
-# INPUTS (carded + segmented controls)
+# INPUTS
 # =========================
 st.markdown("<div class='section-title'>🚀 Project Inputs</div>", unsafe_allow_html=True)
-st.markdown("<div class='section-sub'>Set your pricing model, customer type, and scope. Values update the quote instantly.</div>", unsafe_allow_html=True)
-
 with st.form("inputs", border=False):
-    st.markdown("<div class='card'>", unsafe_allow_html=True)
     c1, c2 = st.columns(2)
 
-    # Pricing model (segmented)
-    with c1:
-        st.markdown("<div class='seg-label'>Pricing Model</div>", unsafe_allow_html=True)
-        mode = st.radio("Pricing Model", ["One-Time Sell", "Subscription"], index=0, horizontal=True, label_visibility="collapsed")
-    with c2:
-        cust_type = st.selectbox("Customer Type", ["Partner", "Non-Partner"])
+    # Pricing model + customer type
+    mode = c1.selectbox("Pricing Model", ["One-Time Sell", "Subscription"])
+    cust_type = c2.selectbox("Customer Type", ["Partner", "Non-Partner"])
 
     # Cameras + AI usage
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
-    with c2:
-        st.markdown("<div class='seg-label'>Use AI Analytics?</div>", unsafe_allow_html=True)
-        ai_enabled = st.radio("Use AI Analytics?", ["No", "Yes"], index=1, horizontal=True, label_visibility="collapsed") == "Yes"
+    # DEFAULT = Yes (index=1 in ["No","Yes"])
+    ai_enabled = c2.selectbox("Use AI Analytics?", ["No", "Yes"], index=1) == "Yes"
 
     # AI tiers (disabled if not using AI)
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1, disabled=not ai_enabled)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1, disabled=not ai_enabled)
 
-    # Storage (segmented + custom label w/ link)
-    with c1:
-        st.markdown("<div class='seg-label'>Include Storage?</div>", unsafe_allow_html=True)
-        include_storage = st.radio("Include Storage?", ["No", "Yes"], index=1, horizontal=True, label_visibility="collapsed") == "Yes"
+    # Storage (DEFAULT = Yes)
+    include_storage = c1.selectbox("Include Storage?", ["No", "Yes"], index=1) == "Yes"
     if include_storage:
         with c2:
+            # Custom label row: text + link (inline at the label)
             st.markdown(
                 """
                 <div style='display:flex; align-items:center; gap:10px; margin:0 0 6px 2px;'>
@@ -381,17 +334,18 @@ with st.form("inputs", border=False):
                 """,
                 unsafe_allow_html=True,
             )
-            storage_tb_total = st.number_input(label="", min_value=1, value=8, step=1, label_visibility="collapsed")
+            storage_tb_total = st.number_input(
+                label="",
+                min_value=1, value=8, step=1,
+                label_visibility="collapsed"
+            )
     else:
         storage_tb_total = None
 
-    st.markdown("</div>", unsafe_allow_html=True)  # /card
-
-    st.markdown("<div class='spacer-12'></div>", unsafe_allow_html=True)
     submitted = st.form_submit_button("Calculate ✨", use_container_width=True)
 
 # =========================
-# RESULTS (carded)
+# RESULTS
 # =========================
 if submitted:
     r = calc(mode, total, cust_type, ai_enabled, t1, t2, include_storage, storage_tb_total)
@@ -400,24 +354,17 @@ if submitted:
         st.error(r["message"])
     else:
         st.balloons()
-
-        # Summary card
         st.markdown("<div class='section-title'>🧁 Summary</div>", unsafe_allow_html=True)
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
         k1, k2, k3, k4 = st.columns(4)
         with k1: st.metric("Grand Total (THB)", thb(r["grand_total"]))
         with k2: st.metric("Partner Discount",   thb(r["discount"]))
         with k3: st.metric("Net Total (THB)",    thb(r["net_total"]))
-        with k4: st.metric(("MA 20%/yr (THB)" if r["ma_rate"] > 0 else "MA (Included / Subscriptions)"),
+        # Subscription ไม่มี MA (แสดงเป็น 0) — ไว้เป็น option ไม่รวมยอด
+        with k4: st.metric(("MA 20%/yr (THB)" if r["ma_rate"] > 0 else "MA (Subscription includes)"),
                            (thb(r["ma_yearly"]) if r["ma_rate"] > 0 else "-"))
-        st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("<div class='spacer-16'></div>", unsafe_allow_html=True)
-
-        # Quote table card
+        # Quote table
         st.markdown("<div class='section-title'>🧾 Quote Table</div>", unsafe_allow_html=True)
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
-
         line_rows = [
             {"Item": n, "Qty": q, "Unit Price (THB)": (thb(u) if u else "-"), "Subtotal (THB)": (thb(s) if s else "-")}
             for (n, q, u, s) in r["lines"] if not (q == 0 and s == 0 and "not enabled" in str(n))
@@ -428,19 +375,17 @@ if submitted:
             {"Item":"Partner Discount (THB)", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["discount"])},
             {"Item":"Net Total (THB)",        "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["net_total"])},
         ]
+        # MA แสดงเป็น option ด้านล่างสุด ไม่รวมยอด
         if r["ma_rate"] > 0:
             totals_rows.append({"Item":"MA 20%/yr (info)", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)": thb(r["ma_yearly"])})
         else:
-            totals_rows.append({"Item":"Warranty & Maintenance", "Qty":"", "Unit Price (THB)":"", "Subtotal (THB)":"Included in Subscription (not charged)"})
+            totals_rows.append({"Item":"Warranty & Maintenance", "Qty":"", "Unit Price (THB)":"",
+                                "Subtotal (THB)":"Included in Subscription (not charged)"})
 
         quote_df = pd.DataFrame(line_rows + totals_rows)
         st.dataframe(quote_df, use_container_width=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
-        st.markdown("<div class='spacer-16'></div>", unsafe_allow_html=True)
-
-        # Download card
-        st.markdown("<div class='card'>", unsafe_allow_html=True)
+        # Excel export
         def build_excel(df: pd.DataFrame) -> bytes:
             buffer = BytesIO()
             with pd.ExcelWriter(buffer, engine="xlsxwriter") as writer:
@@ -450,12 +395,18 @@ if submitted:
                     width = max(14, int(df[col].astype(str).map(len).max()) + 2)
                     ws.set_column(i, i, width)
             return buffer.getvalue()
+
         xlsx_bytes = build_excel(quote_df)
         st.download_button(
             "📥 Download Quote",
             data=xlsx_bytes,
-            file_name=f"SCM_Quote_{date.today().isoformat()}_{'SUB' if r['mode']=='Subscription' else 'OT'}.xlsx",
+            file_name=f"SCM_Quote_{date.today().isoformat()}_{'SUB' if mode=='Subscription' else 'OT'}.xlsx",
             mime="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
             use_container_width=True,
         )
-        st.markdown("</div>", unsafe_allow_html=True)
+
+# Footer
+st.markdown(
+    "<div style='text-align:center;color:#6B7280;font-size:12px;margin-top:10px;'>Made with 💜 • For custom scopes, contact Solutions Team.</div>",
+    unsafe_allow_html=True,
+)
