@@ -26,7 +26,7 @@ st.set_page_config(
 )
 
 # =========================
-# GLOBAL STYLES (รวม fix ไอคอน toolbar ให้เห็นชัด)
+# GLOBAL STYLES (with caret fix)
 # =========================
 st.markdown(
     f"""
@@ -94,10 +94,37 @@ st.markdown(
         color:#FFFFFF !important; fill:none !important; stroke:#FFFFFF !important; stroke-width:1.5 !important;
       }}
       [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg {{ filter:brightness(1.2); }}
+
+      /* ===== Caret (typing cursor) visibility fix for number/text inputs ===== */
+      .stNumberInput input,
+      div[data-baseweb="input"] input[type="number"],
+      div[data-baseweb="input"] input[type="text"],
+      div[data-baseweb="select"] input[type="text"] {{
+        caret-color: #111827 !important;     /* make caret black */
+        color: #111827 !important;            /* ensure dark text */
+        background: #FFFFFF !important;       /* solid background behind caret */
+      }}
+      /* Focus ring to make active field obvious */
+      .stNumberInput > div > div:focus-within,
+      div[data-baseweb="input"]:focus-within {{
+        border-color: {PRIMARY} !important;
+        box-shadow: 0 0 0 2px rgba(124,131,253,0.25) !important;
+        outline: none !important;
+      }}
+      /* Selection highlight color */
+      .stNumberInput input::selection,
+      div[data-baseweb="input"] input::selection {{
+        background: rgba(124,131,253,0.25);
+      }}
+      /* Safari/WebKit fallback for caret inside number fields */
+      @supports (-webkit-touch-callout: none) {{
+        input[type="number"] {{ -webkit-text-fill-color: #111827 !important; }}
+      }}
     </style>
     """,
     unsafe_allow_html=True,
 )
+
 
 # =========================
 # HEADER
