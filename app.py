@@ -133,44 +133,38 @@ st.markdown(
         padding:10px 16px !important;
         box-shadow:0 8px 24px rgba(124,131,253,0.30) !important;
       }}
-      .stButton > button:hover {{
-        filter:brightness(1.05);
-      }}
+      .stButton > button:hover {{ filter:brightness(1.05); }}
 
       /* ตารางและ Metric */
       [data-testid="stMetricValue"], [data-testid="stMetricLabel"] {{
         color:{ACCENT} !important;
       }}
-      [data-testid="stDataFrame"] * {{
-        color:{ACCENT} !important;
-      }}
+      [data-testid="stDataFrame"] * {{ color:{ACCENT} !important; }}
       [data-testid="stDataFrame"] div[role="columnheader"] {{
         background:#F7F8FF !important;
+      }}
+
+      /* ===== DataFrame toolbar icons — force white ===== */
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg,
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg *,
+      [data-testid="stDataFrame"] [title="Download data as CSV"] svg,
+      [data-testid="stDataFrame"] [title="View fullscreen"] svg,
+      [data-testid="stDataFrame"] [aria-label="Search"] svg {{
+        color:#FFFFFF !important;
+        fill:#FFFFFF !important;
+        stroke:#FFFFFF !important;
+        opacity:1 !important;
+      }}
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg,
+      [data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:focus svg {{
+        color:#FFFFFF !important;
+        fill:#FFFFFF !important;
+        stroke:#FFFFFF !important;
       }}
     </style>
     """,
     unsafe_allow_html=True,
 )
-
-/* ===== Make DataFrame toolbar icons white ===== */
-[data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg,
-[data-testid="stDataFrame"] [data-testid="stElementToolbar"] svg *,
-[data-testid="stDataFrame"] [title="Download data as CSV"] svg,
-[data-testid="stDataFrame"] [title="View fullscreen"] svg,
-[data-testid="stDataFrame"] [aria-label="Search"] svg {
-  color: #FFFFFF !important;
-  fill:  #FFFFFF !important;
-  stroke:#FFFFFF !important;
-  opacity: 1 !important;
-}
-
-/* keep them white on hover/focus too */
-[data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:hover svg,
-[data-testid="stDataFrame"] [data-testid="stElementToolbar"] button:focus svg {
-  color: #FFFFFF !important;
-  fill:  #FFFFFF !important;
-  stroke:#FFFFFF !important;
-}
 
 # =========================
 # HEADER
