@@ -315,31 +315,33 @@ with st.form("inputs", border=False):
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1, disabled=not ai_enabled)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1, disabled=not ai_enabled)
 
-    # Storage inputs + JVSG link inline
+    # Storage (custom label with inline helper link)
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
     if include_storage:
-        # create inline columns for input + link
-        s1, s2 = c2.columns([3, 2])
-        storage_tb_total = s1.number_input("Storage Required (TB)", min_value=1, value=8, step=1)
-
-        # inline link with black font
-        s2.markdown(
-            """
-            <div style='margin-top:32px; text-align:left; font-size:13px;'>
-              <a href='https://www.jvsg.com/storage-bandwidth-calculator/' 
-                 target='_blank' rel='noopener noreferrer'
-                 style='text-decoration:none; color:#111827; font-weight:600;'>
-                 🔗 Need an estimate?
-              </a>
-            </div>
-            """,
-            unsafe_allow_html=True,
-        )
+        with c2:
+            # Custom label row: text + link (inline)
+            st.markdown(
+                """
+                <div style='display:flex; align-items:center; gap:10px; margin:0 0 6px 2px;'>
+                  <span style='font-size:14px; font-weight:600; color:#111827;'>Storage Required (TB)</span>
+                  <a href='https://www.jvsg.com/storage-bandwidth-calculator/'
+                     target='_blank' rel='noopener noreferrer'
+                     style='font-size:13px; color:#111827; text-decoration:none;'>
+                     🔗 Need an estimate?
+                  </a>
+                </div>
+                """,
+                unsafe_allow_html=True,
+            )
+            storage_tb_total = st.number_input(
+                label="",
+                min_value=1, value=8, step=1,
+                label_visibility="collapsed"  # hide default label; we render our own with link
+            )
     else:
         storage_tb_total = None
 
     submitted = st.form_submit_button("Calculate ✨", use_container_width=True)
-
 
 # =========================
 # RESULTS
