@@ -152,7 +152,6 @@ st.markdown(
     unsafe_allow_html=True,
 )
 
-
 # =========================
 # HEADER
 # =========================
@@ -185,13 +184,18 @@ CAMERA_TIERS = [(10, 1800), (30, 1600), (50, 1500), (100, 1300)]
 T1_TIERS     = [(50, 11000), (100, 8000)]
 T2_TIERS     = [(50, 5600), (100, 4500)]
 
+# ราคาสำหรับกรณีเกิน max tier
+OVER_100_CAMERA_PRICE = 1200
+OVER_100_T1_PRICE     = 6000
+OVER_100_T2_PRICE     = 3500
+
 STORAGE_BASE = {1:1670, 2:2030, 4:2930, 6:4990, 8:6890, 10:10990}
 
 BASE_LICENSE     = 45000
 AI_BASE_LICENSE  = 15000
 T1_CAP, T2_CAP   = 10, 14
 HW_BASE          = 65000
-SI_MU, NONSI_MU  = 0.20, 0.30
+SI_MU, NONSI_MU  = 0.20, 0.30  # ใช้กับ Partner / Non-Partner
 MA_RATE          = 0.20  # info only
 
 def tier_price(qty: int, tiers):
@@ -199,7 +203,7 @@ def tier_price(qty: int, tiers):
     for bound, price in tiers:
         if qty <= bound:
             return price
-    return None  # exceeds max -> contact sales
+    return None  # เกิน tier สูงสุด
 
 def choose_storage_combo(required_tb: int):
     # Greedy: pick smallest SKU that covers remaining; ensures sum >= required
@@ -216,26 +220,39 @@ def choose_storage_combo(required_tb: int):
     return combo
 
 def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
+    # Validation
     if t1 + t2 > total:
         return {"status":"ERROR","message":"AI cameras exceed total cameras."}
-    if total > 100 or t1 > 100 or t2 > 100:
-        return {"status":"CONTACT_SALES","reason":"Total cameras or an AI tier exceeds 100."}
 
+    # Unit prices (รองรับ >100 ตามสเปกใหม่)
     cam_unit = tier_price(total, CAMERA_TIERS)
-    t1_unit  = tier_price(t1, T1_TIERS)
-    t2_unit  = tier_price(t2, T2_TIERS)
-    mu       = SI_MU if cust_type == "SI" else NONSI_MU
+    if cam_unit is None:
+        cam_unit = OVER_100_CAMERA_PRICE  # 1) >100 กล้อง = 1,200/ตัว
 
+    t1_unit  = tier_price(t1, T1_TIERS)
+    if t1_unit is None:
+        t1_unit = OVER_100_T1_PRICE       # 2) AI T1 >100 = 6,000/ไลเซนส์
+
+    t2_unit  = tier_price(t2, T2_TIERS)
+    if t2_unit is None:
+        t2_unit = OVER_100_T2_PRICE       # 3) AI T2 >100 = 3,500/ไลเซนส์
+
+    # Markup ตามประเภทลูกค้า (4) เปลี่ยนคำ: SI -> Partner, Non-SI -> Non-Partner
+    mu = SI_MU if cust_type == "Partner" else NONSI_MU
+
+    # Subtotals
     base_sub     = BASE_LICENSE
     cams_sub     = total * (cam_unit or 0)
     ai_base_sub  = (1 if t1 + t2 > 0 else 0) * AI_BASE_LICENSE
     ai_t1_sub    = t1 * (t1_unit or 0)
     ai_t2_sub    = t2 * (t2_unit or 0)
 
+    # AI Processing Equipment (คำนวนจำนวนเครื่องจาก CAP)
     hw_units      = ceil((t1 / T1_CAP) + (t2 / T2_CAP)) if (t1 + t2) > 0 else 0
     hw_unit_price = (HW_BASE * (1 + mu)) if hw_units > 0 else 0
     hw_sub        = hw_units * hw_unit_price
 
+    # Storage (มี markup, และไม่เข้าคิดส่วนลด)
     storage_lines = []
     storage_sub   = 0
     if include_storage:
@@ -248,10 +265,14 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
             storage_sub += sub
             storage_lines.append((f"HDD {size_tb} TB", qty, unit_after_markup, sub))
 
-    grand    = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
-    discount = -0.20 * grand if cust_type == "SI" else 0
-    net      = grand + discount
-    ma       = MA_RATE * net
+    # 5) ส่วนลด Partner -20% เฉพาะ: Base, Cameras, AI Base, AI T1, AI T2
+    discount_base_amount = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub
+    partner_discount = -0.20 * discount_base_amount if cust_type == "Partner" else 0
+
+    # ยอดรวมก่อน/หลังส่วนลด
+    grand = base_sub + cams_sub + ai_base_sub + ai_t1_sub + ai_t2_sub + hw_sub + storage_sub
+    net   = grand + partner_discount
+    ma    = MA_RATE * net
 
     lines = [
         ("Base License", 1, BASE_LICENSE, base_sub),
@@ -263,7 +284,14 @@ def calc(total, cust_type, t1, t2, include_storage, storage_tb_total):
     ]
     lines.extend(storage_lines)
 
-    return {"status":"OK","lines":lines,"grand_total":grand,"discount":discount,"net_total":net,"ma_yearly":ma}
+    return {
+        "status":"OK",
+        "lines":lines,
+        "grand_total":grand,
+        "discount":partner_discount,
+        "net_total":net,
+        "ma_yearly":ma
+    }
 
 def thb(n):
     try: return f"{int(round(n)):,}"
@@ -276,7 +304,8 @@ st.markdown("<div class='section-title'>🚀 Project Inputs</div>", unsafe_allow
 with st.form("inputs", border=False):
     c1, c2 = st.columns(2)
     total = c1.number_input("Total Cameras", min_value=0, value=22, step=1)
-    cust_type = c2.selectbox("Customer Type", ["SI", "Non-SI"])
+    # (4) เปลี่ยนชื่อ Customer Type
+    cust_type = c2.selectbox("Customer Type", ["Partner", "Non-Partner"])
     t1 = c1.number_input("AI Tier 1 Cameras", min_value=0, value=5, step=1)
     t2 = c2.number_input("AI Tier 2 Cameras", min_value=0, value=7, step=1)
     include_storage = c1.selectbox("Include Storage?", ["No", "Yes"]) == "Yes"
@@ -291,20 +320,10 @@ if submitted:
 
     if r["status"] == "ERROR":
         st.error(r["message"])
-
-    elif r["status"] == "CONTACT_SALES":
-        st.markdown(
-            "<div class='section-title'>📞 Contact Sales</div>"
-            "<div>Totals are hidden for projects with more than 100 cameras or any AI tier above 100.</div>",
-            unsafe_allow_html=True,
-        )
-        st.subheader("Grand Total")
-        st.write("CONTACT SALES")
-
     else:
         st.balloons()
 
-        # Summary metrics (no empty card wrappers)
+        # Summary metrics
         st.markdown("<div class='section-title'>🧁 Summary</div>", unsafe_allow_html=True)
         k1, k2, k3, k4 = st.columns(4)
         with k1: st.metric("Grand Total (THB)", thb(r["grand_total"]))
